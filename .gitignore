@@ -30,3 +30,7 @@ pnpm-debug.log*
 # skills
 .claude/
 skills-lock.json
+.agents/skills/
+
+# private notes
+notes.txt
