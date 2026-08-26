@@ -19,6 +19,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (!context.locals.user) {
       return context.redirect("/auth/signin");
     }
+    const response = await next();
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
   }
 
   return next();

@@ -181,7 +181,7 @@ Per your decision, GitHub Actions does **not** get a deploy job — Cloudflare W
 
 - [ ] Upgrade to the $5/month Workers paid plan before any public announcement (10ms CPU cap on free tier is incompatible with SSR; 100k req/day free cap is a daily hard-stop, not metered)
 - [ ] Re-run the Phase 4 smoke test against the production URL one final time
-- [ ] Update `context/deployment/deploy-plan.md` (per CLAUDE.md's infra chain) marking this plan as executed, so future milestone-planning skills know what's already deployed
+- [ ] Update this file (`context/deployment/deploy-plan.md`, per CLAUDE.md's infra chain) marking this plan as executed, so future milestone-planning skills know what's already deployed
 
 ---
 
