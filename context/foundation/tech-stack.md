@@ -5,7 +5,7 @@ project_name: kratka
 hints:
   language_family: js
   team_size: solo
-  deployment_target: cloudflare-pages
+  deployment_target: cloudflare-workers
   ci_provider: github-actions
   ci_default_flow: auto-deploy-on-merge
   bootstrapper_confidence: first-class
@@ -31,6 +31,6 @@ owner-scoped data via Row-Level Security (the ownership guardrail); React island
 carry the interactive 100×100 grid editor while Astro's static pages give a clean,
 chrome-free print view (FR-015–FR-017). The auth feature flag is set; payments,
 realtime, AI, and background jobs are out of scope per the PRD non-goals.
-Deployment is Cloudflare Pages — what the starter ships pre-configured for, the
+Deployment is Cloudflare Workers — what the starter ships pre-configured for, the
 lowest-friction path to a first deploy for a developer new to web. CI runs on
 GitHub Actions with auto-deploy-on-merge, the starter's standard shape.

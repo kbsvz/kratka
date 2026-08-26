@@ -43,7 +43,7 @@ Full server-side rendering (`output: "server"` in `astro.config.mjs`). API route
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`) runs lint + build on every push and PR to `master`. Requires `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets.
+GitHub Actions (`.github/workflows/ci.yml`) runs lint + build on every push and PR to `main`. Requires `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets.
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
