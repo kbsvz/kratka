@@ -20,16 +20,19 @@ Everything below is scoped to what's needed to get `kratka` live on Cloudflare W
 Set these up before Phase 1. Check off as you go.
 
 **Accounts**
+
 - [ ] Cloudflare account (free to create) — [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up)
 - [ ] Supabase account + project — see Phase 0 below (hosted required for production; local Docker optional for dev)
 - [ ] GitHub repository for `kratka` pushed remotely (required for Phase 5 git integration and Phase 7 CI secrets) — confirm `git remote -v` shows a GitHub origin
 
 **Local CLI tools**
+
 - [ ] Node.js `22.14.0` (already pinned in `.nvmrc` — run `nvm use` if using nvm)
 - [ ] `wrangler` — already a devDependency (`^4.90.0`); no separate global install needed, use `npx wrangler`
 - [ ] `gh` CLI (GitHub CLI) — for setting repo secrets in Phase 7 without leaving the terminal; optional if you prefer the GitHub web UI
 
 **Browser-only steps (cannot be done from CLI/agent)**
+
 - [ ] Cloudflare dashboard access for: API token creation (Phase 2), Workers Builds git integration (Phase 5), viewing Logs (Phase 8)
 - [ ] GitHub repo Settings access for: Actions secrets (Phase 7)
 
@@ -45,20 +48,20 @@ Not Cloudflare-specific, but everything downstream (`.dev.vars`, Worker Secrets,
 
 ### Option A — Hosted Supabase project (required for production)
 
-- [x] Create a project at [supabase.com/dashboard](https://supabase.com/dashboard) (free tier is fine for MVP)  <!-- done: project `kratka`, ref htxbolpzbhzjbakllkyl, West EU -->
-- [x] Dashboard → Settings → API → copy **Project URL** and **`anon` public** key  <!-- done: both present in .dev.vars -->
-- [x] Dashboard → Authentication → Email → decide on "Confirm email"  <!-- DECIDED 2026-08-30: turned OFF on the hosted project for MVP, so sign-up -> sign-in works without a confirmation click. Local already had enable_confirmations = false in config.toml. Trade-off accepted: addresses are unverified, so typo/fake emails can register and password reset would go to an unproven address. Revisit before any real launch. NOTE: do NOT use `supabase config push` to sync this -- config.toml still has site_url = "http://127.0.0.1:3000", which would break production auth redirects. -->
+- [x] Create a project at [supabase.com/dashboard](https://supabase.com/dashboard) (free tier is fine for MVP) <!-- done: project `kratka`, ref htxbolpzbhzjbakllkyl, West EU -->
+- [x] Dashboard → Settings → API → copy **Project URL** and **`anon` public** key <!-- done: both present in .dev.vars -->
+- [x] Dashboard → Authentication → Email → decide on "Confirm email" <!-- DECIDED 2026-08-30: turned OFF on the hosted project for MVP, so sign-up -> sign-in works without a confirmation click. Local already had enable_confirmations = false in config.toml. Trade-off accepted: addresses are unverified, so typo/fake emails can register and password reset would go to an unproven address. Revisit before any real launch. NOTE: do NOT use `supabase config push` to sync this -- config.toml still has site_url = "http://127.0.0.1:3000", which would break production auth redirects. -->
 - [ ] These two values become `SUPABASE_URL` / `SUPABASE_KEY` in: `.dev.vars` (Phase 1, if you want prod-like local dev), Worker Secrets via `wrangler secret put` (Phase 3), Cloudflare Workers Builds build-time env vars (Phase 5), and the existing GitHub Actions build step (`.github/workflows/ci.yml` already reads these as repo secrets — confirm they're set: Settings → Secrets and variables → Actions)
-- [ ] **Edge case — preview environments sharing the production database:** if Phase 5's PR preview deploys point at the same hosted Supabase project as production, preview testing can create/pollute real user data. Recommended: create a second, free hosted Supabase project scoped to preview/staging only, with its own `SUPABASE_URL`/`SUPABASE_KEY` set as Cloudflare Workers Builds' *preview* (not production) environment variables. Skip this only if preview will never be shared beyond you.
+- [ ] **Edge case — preview environments sharing the production database:** if Phase 5's PR preview deploys point at the same hosted Supabase project as production, preview testing can create/pollute real user data. Recommended: create a second, free hosted Supabase project scoped to preview/staging only, with its own `SUPABASE_URL`/`SUPABASE_KEY` set as Cloudflare Workers Builds' _preview_ (not production) environment variables. Skip this only if preview will never be shared beyond you.
 
 ### Option B — Local Supabase via Docker (optional, dev-only)
 
-- [x] Confirm Docker Desktop (or equivalent) is installed and running, with ~7GB RAM available  <!-- done during F-01 patterns-schema-rls -->
+- [x] Confirm Docker Desktop (or equivalent) is installed and running, with ~7GB RAM available <!-- done during F-01 patterns-schema-rls -->
 - [ ] `cp .env.example .env`
-- [ ] `npx supabase init` (scaffolds proper `supabase/` config — not yet done in this repo)
-- [x] `npx supabase start` (downloads Docker images on first run; can take several minutes the first time)  <!-- done during F-01 patterns-schema-rls -->
+- [x] ~~`npx supabase init`~~ **Not needed.** `supabase/config.toml` ships with the starter, so `init` was never run and must not be — it would overwrite the existing config. Go straight to `npx supabase start`.
+- [x] `npx supabase start` (downloads Docker images on first run; can take several minutes the first time) <!-- done during F-01 patterns-schema-rls -->
 - [ ] Copy the `API URL` (typically `http://127.0.0.1:54321`) and `anon key` the CLI prints into `.env` **and** `.dev.vars` (Phase 1) as `SUPABASE_URL` / `SUPABASE_KEY`
-- [x] Local Studio UI available at `http://localhost:54323` for inspecting `auth.users` during dev  <!-- done during F-01 patterns-schema-rls -->
+- [x] Local Studio UI available at `http://localhost:54323` for inspecting `auth.users` during dev <!-- done during F-01 patterns-schema-rls -->
 - [x] ~~No migrations required yet~~ **Stale.** F-01 added `supabase/migrations/20260830140641_create_patterns_and_names.sql` (patterns + pattern_names). Run `npx supabase db reset` after `start` to apply it locally.
 - [ ] `npx supabase stop` when done with a session
 - [ ] **Edge case:** local Supabase's `SUPABASE_URL` (`127.0.0.1:54321`) only works from `npm run dev` on this machine — never put the local URL in Worker Secrets, Workers Builds env vars, or CI secrets; those must always point at the Option A hosted project.
@@ -67,12 +70,12 @@ Not Cloudflare-specific, but everything downstream (`.dev.vars`, Worker Secrets,
 
 ## Phase 1 — Local secrets file
 
-- [x] Create `.dev.vars` from `.env.example` (confirmed not to exist yet):  <!-- done: .dev.vars exists -->
+- [x] Create `.dev.vars` from `.env.example` (confirmed not to exist yet): <!-- done: .dev.vars exists -->
   ```bash
   cp .env.example .dev.vars
   ```
-- [x] Fill in real `SUPABASE_URL` / `SUPABASE_KEY` values in `.dev.vars`  <!-- done, but note: .dev.vars currently points at the HOSTED project, not the local stack. A local stack now exists (Option B was completed on 2026-08-30 as part of F-01), so switch these to the local URL/key when you want offline dev. --> (not `.env` — the Cloudflare/`workerd` dev runtime reads `.dev.vars`, not `.env`; using the wrong file is exactly the failure mode infra.md's Devil's Advocate #2 warns about)
-- [x] Confirm `.dev.vars` is gitignored (already verified: yes, alongside `.env`/`.env.production`/`.wrangler/`) — do not skip this check after any future `.gitignore` edit  <!-- re-verified 2026-08-30 -->
+- [x] Fill in real `SUPABASE_URL` / `SUPABASE_KEY` values in `.dev.vars` <!-- done, but note: .dev.vars currently points at the HOSTED project, not the local stack. A local stack now exists (Option B was completed on 2026-08-30 as part of F-01), so switch these to the local URL/key when you want offline dev. --> (not `.env` — the Cloudflare/`workerd` dev runtime reads `.dev.vars`, not `.env`; using the wrong file is exactly the failure mode infra.md's Devil's Advocate #2 warns about)
+- [x] Confirm `.dev.vars` is gitignored (already verified: yes, alongside `.env`/`.env.production`/`.wrangler/`) — do not skip this check after any future `.gitignore` edit <!-- re-verified 2026-08-30 -->
 - [ ] Sanity check: `npm run dev` starts and `/auth/signin` loads without an "missing environment variable" error
 
 **Edge case:** if `npm run dev` throws `ERR_UNIMPLEMENTED` from a dependency, that's a `workerd`/`nodejs_compat` gap, not a broken install — flag the specific package rather than debugging your own code first.
@@ -119,7 +122,7 @@ Since production deploys are owned by Cloudflare Workers Builds (Phase 5) rather
   curl -sf https://kratka.<your-subdomain>.workers.dev/ > /dev/null && echo OK
   ```
 
-**Edge case — blank page with no error:** if this happens on the *free* Workers plan, it's very likely the 10ms CPU cap (Devil's Advocate #1) — SSR + Supabase session resolution + a React island routinely exceeds it. Upgrade to the $5/month paid plan (Dashboard → Workers & Pages → Plans) before treating this as a code bug.
+**Edge case — blank page with no error:** if this happens on the _free_ Workers plan, it's very likely the 10ms CPU cap (Devil's Advocate #1) — SSR + Supabase session resolution + a React island routinely exceeds it. Upgrade to the $5/month paid plan (Dashboard → Workers & Pages → Plans) before treating this as a code bug.
 
 ---
 
@@ -131,7 +134,7 @@ Superseding infra.md's `--env preview` approach (confirmed non-functional with t
 - [ ] Set build command to `npm run build`, deploy command to `npx wrangler deploy` (confirm exact fields in the connection wizard — Cloudflare auto-detects Astro in most cases, but a Workers project's build config differs from Pages, so verify it doesn't fall back to a Pages-style build)
 - [ ] Set the **production branch** to `main` (or `master` — match whatever this repo's default branch actually is) — this is what makes push-to-main auto-deploy to production
 - [ ] Add `SUPABASE_URL` / `SUPABASE_KEY` as **build-time** environment variables in the Builds settings if the build step needs them (distinct from the runtime Worker Secrets from Phase 3 — Builds env vars and Worker Secrets are two different stores)
-- [ ] Push a branch / open a PR (not against the production branch) and confirm: a Branch Preview URL and Commit Preview URL both appear as a PR comment, and the *production* Worker is untouched
+- [ ] Push a branch / open a PR (not against the production branch) and confirm: a Branch Preview URL and Commit Preview URL both appear as a PR comment, and the _production_ Worker is untouched
 - [ ] Push/merge to the production branch and confirm the live `kratka.<subdomain>.workers.dev` URL updates — this is now your **only** production deploy path; the manual `wrangler deploy` from Phase 4 was for first-deploy verification only, don't rely on it going forward for routine changes
 - [ ] Decide whether preview needs Cloudflare Access (shared password gate) — recommended only if preview will ever show real user data; skip for MVP if preview always uses a separate/seeded Supabase project
 
@@ -171,7 +174,7 @@ Per your decision, GitHub Actions does **not** get a deploy job — Cloudflare W
 
 ## Phase 9 — Security/caching guardrails (pre-launch check)
 
-- [ ] Confirm no global Cloudflare cache rule is applied to the account/zone that would cache authenticated SSR routes (Dashboard → Caching → Configuration) — Workers don't cache dynamic routes by default, so this is a check for *accidental* misconfiguration, not a setup step
+- [ ] Confirm no global Cloudflare cache rule is applied to the account/zone that would cache authenticated SSR routes (Dashboard → Caching → Configuration) — Workers don't cache dynamic routes by default, so this is a check for _accidental_ misconfiguration, not a setup step
 - [ ] Confirm `src/middleware.ts`'s protected routes (currently `/dashboard`) send `Cache-Control: private, no-store` — not currently set anywhere in `middleware.ts`; add this header for protected routes before launch to close the gap infra.md's Unknown Unknowns flags
 - [ ] `npm ls astro @astrojs/cloudflare` — confirm versions stay ≥ the CVE-2025-65019 patched versions (`astro` ≥ 5.15.9, `@astrojs/cloudflare` > 12.6.10 — currently 6.3.1 / 13.5.0, well clear)
 
@@ -187,8 +190,8 @@ Per your decision, GitHub Actions does **not** get a deploy job — Cloudflare W
 
 ## Verification summary
 
-End-to-end check once all phases are done:
-0. Hosted Supabase project exists with real credentials; `.dev.vars` populated (Phase 0 + 1)
+End-to-end check once all phases are done: 0. Hosted Supabase project exists with real credentials; `.dev.vars` populated (Phase 0 + 1)
+
 1. `npm run dev` — local dev boots against `.dev.vars`, auth works
 2. `npm run build && npx wrangler deploy` — first manual deploy succeeds, smoke test passes (bootstrap only, Phase 4)
 3. Open a PR — GitHub Actions lint/build passes, and Workers Builds preview URL appears in a PR comment
