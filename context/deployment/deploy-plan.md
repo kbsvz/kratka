@@ -45,21 +45,21 @@ Not Cloudflare-specific, but everything downstream (`.dev.vars`, Worker Secrets,
 
 ### Option A — Hosted Supabase project (required for production)
 
-- [ ] Create a project at [supabase.com/dashboard](https://supabase.com/dashboard) (free tier is fine for MVP)
-- [ ] Dashboard → Settings → API → copy **Project URL** and **`anon` public** key
-- [ ] Dashboard → Authentication → Email → decide on "Confirm email": leave **on** for production (real users should verify), consider turning **off** only for a throwaway staging/preview project so sign-up → sign-in works without clicking a confirmation link
+- [x] Create a project at [supabase.com/dashboard](https://supabase.com/dashboard) (free tier is fine for MVP)  <!-- done: project `kratka`, ref htxbolpzbhzjbakllkyl, West EU -->
+- [x] Dashboard → Settings → API → copy **Project URL** and **`anon` public** key  <!-- done: both present in .dev.vars -->
+- [x] Dashboard → Authentication → Email → decide on "Confirm email"  <!-- DECIDED 2026-08-30: turned OFF on the hosted project for MVP, so sign-up -> sign-in works without a confirmation click. Local already had enable_confirmations = false in config.toml. Trade-off accepted: addresses are unverified, so typo/fake emails can register and password reset would go to an unproven address. Revisit before any real launch. NOTE: do NOT use `supabase config push` to sync this -- config.toml still has site_url = "http://127.0.0.1:3000", which would break production auth redirects. -->
 - [ ] These two values become `SUPABASE_URL` / `SUPABASE_KEY` in: `.dev.vars` (Phase 1, if you want prod-like local dev), Worker Secrets via `wrangler secret put` (Phase 3), Cloudflare Workers Builds build-time env vars (Phase 5), and the existing GitHub Actions build step (`.github/workflows/ci.yml` already reads these as repo secrets — confirm they're set: Settings → Secrets and variables → Actions)
 - [ ] **Edge case — preview environments sharing the production database:** if Phase 5's PR preview deploys point at the same hosted Supabase project as production, preview testing can create/pollute real user data. Recommended: create a second, free hosted Supabase project scoped to preview/staging only, with its own `SUPABASE_URL`/`SUPABASE_KEY` set as Cloudflare Workers Builds' *preview* (not production) environment variables. Skip this only if preview will never be shared beyond you.
 
 ### Option B — Local Supabase via Docker (optional, dev-only)
 
-- [ ] Confirm Docker Desktop (or equivalent) is installed and running, with ~7GB RAM available
+- [x] Confirm Docker Desktop (or equivalent) is installed and running, with ~7GB RAM available  <!-- done during F-01 patterns-schema-rls -->
 - [ ] `cp .env.example .env`
 - [ ] `npx supabase init` (scaffolds proper `supabase/` config — not yet done in this repo)
-- [ ] `npx supabase start` (downloads Docker images on first run; can take several minutes the first time)
+- [x] `npx supabase start` (downloads Docker images on first run; can take several minutes the first time)  <!-- done during F-01 patterns-schema-rls -->
 - [ ] Copy the `API URL` (typically `http://127.0.0.1:54321`) and `anon key` the CLI prints into `.env` **and** `.dev.vars` (Phase 1) as `SUPABASE_URL` / `SUPABASE_KEY`
-- [ ] Local Studio UI available at `http://localhost:54323` for inspecting `auth.users` during dev
-- [ ] No migrations required yet — this project only uses Supabase Auth's built-in `auth.users` table, no custom schema
+- [x] Local Studio UI available at `http://localhost:54323` for inspecting `auth.users` during dev  <!-- done during F-01 patterns-schema-rls -->
+- [x] ~~No migrations required yet~~ **Stale.** F-01 added `supabase/migrations/20260830140641_create_patterns_and_names.sql` (patterns + pattern_names). Run `npx supabase db reset` after `start` to apply it locally.
 - [ ] `npx supabase stop` when done with a session
 - [ ] **Edge case:** local Supabase's `SUPABASE_URL` (`127.0.0.1:54321`) only works from `npm run dev` on this machine — never put the local URL in Worker Secrets, Workers Builds env vars, or CI secrets; those must always point at the Option A hosted project.
 
@@ -67,12 +67,12 @@ Not Cloudflare-specific, but everything downstream (`.dev.vars`, Worker Secrets,
 
 ## Phase 1 — Local secrets file
 
-- [ ] Create `.dev.vars` from `.env.example` (confirmed not to exist yet):
+- [x] Create `.dev.vars` from `.env.example` (confirmed not to exist yet):  <!-- done: .dev.vars exists -->
   ```bash
   cp .env.example .dev.vars
   ```
-- [ ] Fill in real local `SUPABASE_URL` / `SUPABASE_KEY` values in `.dev.vars` (not `.env` — the Cloudflare/`workerd` dev runtime reads `.dev.vars`, not `.env`; using the wrong file is exactly the failure mode infra.md's Devil's Advocate #2 warns about)
-- [ ] Confirm `.dev.vars` is gitignored (already verified: yes, alongside `.env`/`.env.production`/`.wrangler/`) — do not skip this check after any future `.gitignore` edit
+- [x] Fill in real `SUPABASE_URL` / `SUPABASE_KEY` values in `.dev.vars`  <!-- done, but note: .dev.vars currently points at the HOSTED project, not the local stack. A local stack now exists (Option B was completed on 2026-08-30 as part of F-01), so switch these to the local URL/key when you want offline dev. --> (not `.env` — the Cloudflare/`workerd` dev runtime reads `.dev.vars`, not `.env`; using the wrong file is exactly the failure mode infra.md's Devil's Advocate #2 warns about)
+- [x] Confirm `.dev.vars` is gitignored (already verified: yes, alongside `.env`/`.env.production`/`.wrangler/`) — do not skip this check after any future `.gitignore` edit  <!-- re-verified 2026-08-30 -->
 - [ ] Sanity check: `npm run dev` starts and `/auth/signin` loads without an "missing environment variable" error
 
 **Edge case:** if `npm run dev` throws `ERR_UNIMPLEMENTED` from a dependency, that's a `workerd`/`nodejs_compat` gap, not a broken install — flag the specific package rather than debugging your own code first.
@@ -145,7 +145,7 @@ Superseding infra.md's `--env preview` approach (confirmed non-functional with t
 
 - [ ] `npx wrangler deployments list` — confirm at least two deployments exist (deploy a trivial change if needed)
 - [ ] `npx wrangler rollback` — reverts to previous deployment, confirm the site reflects the rollback within seconds
-- [ ] Note for the team: rollback reverts Worker code only. Supabase schema migrations do **not** roll back automatically — this repo has no migrations yet (`supabase/migrations/` doesn't exist), so this is a non-issue today, but the first migration you add should be additive-only (no dropped columns) to stay rollback-safe
+- [ ] Note for the team: rollback reverts Worker code only. Supabase schema migrations do **not** roll back automatically — the first migration (`20260830140641_create_patterns_and_names.sql`, applied to hosted 2026-08-30) is additive-only — new tables, no alterations to existing objects — so a Worker rollback stays safe without a database rollback. Keep that property for every future migration
 
 ---
 

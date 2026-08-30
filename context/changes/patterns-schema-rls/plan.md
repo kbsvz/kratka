@@ -90,6 +90,21 @@ opening a never-saved pattern, and S-03's print view must not assume the array i
 an unguarded index into an empty array is the failure mode here. The invariant that survives is
 narrower than a strict equality: a grid is either absent or exactly right, never partially wrong.
 
+**Soft delete must go through an RPC, not an UPDATE — discovered during Phase 2.** PostgreSQL
+applies the SELECT policy's `USING` clause to the *new* row during an `UPDATE`. Our SELECT policy
+requires `deleted_at is null`, so setting `deleted_at` moves the row out of its own visibility and
+Postgres rejects the statement with `42501`. The two review decisions — "RLS filters out deleted
+rows" and "deleting is an UPDATE that sets deleted_at" — are mutually exclusive.
+
+Resolved with `soft_delete_pattern(p_id uuid)`, a `security definer` function granted to
+`authenticated` only. RLS does not apply inside it, so its `user_id = (select auth.uid())`
+predicate **is** the authorization — treat that line as load-bearing. It raises `KR002` for a
+missing, already-deleted, or someone-else's pattern without distinguishing them.
+
+The upside of the collision: `deleted_at` is now genuinely immutable from the client, so the RPC
+is the single audited path to deletion. Two pgTAP assertions pin this — a direct UPDATE is
+rejected, and user B cannot delete user A's pattern even when handed a valid id.
+
 **Slot uniqueness must be a partial index.** A plain `UNIQUE (user_id, slot)` would let a
 soft-deleted row hold its slot permanently, so a user who deleted a pattern could never create a
 replacement. Scope the index with `WHERE deleted_at IS NULL`.
@@ -101,6 +116,38 @@ ever assigned, or a deleted pattern's name recycles onto different content. Henc
 trigger is `security definer`. Both failures are narrow — the first hits only users who deleted
 their most recent pattern, the second is invisible until someone notices a familiar name on
 unfamiliar work — so each has its own pgTAP assertion rather than relying on incidental coverage.
+
+**Supabase's default privileges grant ALL on new `public` tables and functions to `anon` and
+`authenticated` — start from deny, not from patching.** This tripped two separate Supabase
+advisors during implementation, both from the same root cause:
+
+- *Public Can Execute SECURITY DEFINER Function* — the trigger functions were executable by
+  `anon`. Revoking is safe: trigger permissions are checked when the trigger is *created*, not
+  when it fires, so triggers keep working with no EXECUTE grant at all.
+- *Public Can See Object in GraphQL Schema* — `anon` retained SELECT on `patterns`, making the
+  table discoverable to anyone holding the public anon key. RLS still denied every row (no anon
+  policy), so this was schema disclosure, not data disclosure — but FR-003 says an
+  unauthenticated visitor sees only the landing page, and a discoverable table contradicts that.
+
+The migration therefore issues `revoke all ... from anon, authenticated` on both tables and all
+three functions first, then grants back exactly `select, insert, update on patterns to
+authenticated`. Revoking individual privileges (`revoke delete ...`) leaves the rest silently
+granted — that is precisely how the second advisor slipped through the first fix.
+
+Verify with `has_table_privilege` / `has_function_privilege` rather than reading the migration,
+and re-check the Advisors tab after the Phase 4 hosted push.
+
+**Advisor 0027 ("Signed-In Users Can See Object in GraphQL Schema") is expected — do not fix it.**
+It fires because `authenticated` can SELECT `patterns`, which is required: table-level grants are
+checked *before* RLS, so without the grant the `patterns_select` policy never evaluates and every
+downstream slice gets `permission denied for table patterns`. Signed-in users discovering that
+`patterns` exists is correct; RLS keeps them to their own rows. Its sibling 0026 (the `anon`
+variant) *was* worth fixing — signed-out visitors should discover nothing (FR-003). Expect 0027
+to reappear on the hosted project after Phase 4; dismiss it there too.
+
+Noted but not acted on: `graphql_public` is an exposed schema and `pg_graphql` is installed, yet
+kratka uses no GraphQL anywhere. Dropping it would remove this advisor class entirely, but that's
+a project-wide API config change outside this foundation's scope.
 
 **Table creation and RLS must be in the same migration file.** A migration that creates the table
 and a later one that enables RLS leaves a window where the table is world-readable through
@@ -345,7 +392,7 @@ insert into pattern_names (id, name) values
   (47, 'Just Pixels'),
   (48, 'Pixel Picnic'),
   (49, 'My Best Work Yet'),
-  (50, 'Masterpiece'),
+  (50, 'Another Masterpiece'),
   (51, 'Working Title'),
   (52, 'Call It Something'),
   (53, 'Placeholder Name'),
@@ -528,10 +575,32 @@ the regeneration command.
 **Intent**: Re-export ergonomic entity and DTO aliases over the generated `Database` type, so
 S-01/S-02/S-03 import domain names rather than reaching into generated internals.
 
-**Contract**: exports `Pattern` (row), `PatternInsert`, `PatternUpdate`, `PatternListItem`
-(the `name`/`width`/`height`/`updated_at` subset FR-011 needs), and `PaletteColor`.
+**Contract**: exports `Pattern` (the row), `PatternCreate`, `PatternUpdate`, `PatternListItem`
+(the subset FR-011 renders), `PaletteColor`, `PatternPalette`, and `PatternGrid`.
 
-#### 3. Typed Supabase client
+`PatternCreate` and `PatternUpdate` are deliberately narrower than the generated `Insert`/`Update`
+shapes, which describe columns but not the triggers wrapped around them. The generator marks a
+column optional only when it is nullable or carries a `DEFAULT`; it does not read triggers. So the
+generated `Insert` reports `name`, `seq` and `slot` as *required* when in truth the BEFORE INSERT
+trigger discards whatever is supplied, and the generated `Update` offers columns the BEFORE UPDATE
+trigger pins. The raw shapes are not re-exported — `Database[...]["Insert"]` remains reachable
+directly for the rare caller that wants it.
+
+#### 3. Exclude the generated file from formatters
+
+**File**: `eslint.config.js`, `.prettierignore`
+
+**Intent**: Keep the generated types out of ESLint and Prettier. It arrives unformatted and
+produces ~126 `prettier/prettier` errors; formatting it would be reverted by the next
+`supabase gen types` run, so every schema change would carry a formatting diff.
+
+**Contract**: an `{ ignores: ["src/lib/database.types.ts"] }` entry in `eslint.config.js` (note
+the config resolves ignores through `includeIgnoreFile(gitignorePath)`, so `.gitignore` cannot be
+used — the file must stay committed for CI to type-check and build without a database), plus a
+`.prettierignore` carrying the same path so `npm run format` leaves it alone. The file is still
+fully type-checked by `tsc` via `astro check`.
+
+#### 4. Typed Supabase client
 
 **File**: `src/lib/supabase.ts`
 
@@ -661,50 +730,50 @@ built; at MVP scale this is negligible and is explicitly out of scope here.
 
 #### Automated
 
-- [ ] 1.1 Local stack starts: `npx supabase start`
-- [ ] 1.2 Migration applies cleanly from scratch: `npx supabase db reset`
+- [x] 1.1 Local stack starts: `npx supabase start` — b726a4a
+- [x] 1.2 Migration applies cleanly from scratch: `npx supabase db reset` — b726a4a
 
 #### Manual
 
-- [ ] 1.3 `\d patterns` shows every column, CHECK constraint, and both indexes
-- [ ] 1.4 Both tables report RLS enabled in Studio
-- [ ] 1.5 `pattern_names` returns the three ordinal names first
+- [x] 1.3 `\d patterns` shows every column, CHECK constraint, and both indexes — b726a4a
+- [x] 1.4 Both tables report RLS enabled in Studio — b726a4a
+- [x] 1.5 `pattern_names` returns the three ordinal names first — b726a4a
 
 ### Phase 2: pgTAP Isolation Tests
 
 #### Automated
 
-- [ ] 2.1 Test suite passes: `npx supabase test db`
-- [ ] 2.2 Suite passes from a clean database: `npx supabase db reset && npx supabase test db`
+- [x] 2.1 Test suite passes: `npx supabase test db` — d8ce765
+- [x] 2.2 Suite passes from a clean database: `npx supabase db reset && npx supabase test db` — d8ce765
 
 #### Manual
 
-- [ ] 2.3 Assertion names and count reviewed — suite is not vacuously passing
-- [ ] 2.4 Deliberately broken policy causes the suite to fail
+- [x] 2.3 Assertion names and count reviewed — suite is not vacuously passing — d8ce765
+- [x] 2.4 Deliberately broken policy causes the suite to fail — d8ce765
 
 ### Phase 3: Generated Types
 
 #### Automated
 
-- [ ] 3.1 Types generate without error: `npx supabase gen types typescript --local`
-- [ ] 3.2 Type checking passes: `npx astro check`
-- [ ] 3.3 Linting passes: `npm run lint`
-- [ ] 3.4 Build passes: `npm run build`
+- [x] 3.1 Types generate without error: `npx supabase gen types typescript --local` — fa76eed
+- [x] 3.2 Type checking passes: `npx astro check` — fa76eed
+- [x] 3.3 Linting passes: `npm run lint` — fa76eed
+- [x] 3.4 Build passes: `npm run build` — fa76eed
 
 #### Manual
 
-- [ ] 3.5 `src/types.ts` exports read naturally for S-01 consumption
+- [x] 3.5 `src/types.ts` exports read naturally for S-01 consumption — fa76eed
 
 ### Phase 4: Push to Hosted Project
 
 #### Automated
 
-- [ ] 4.1 Link succeeds: `npx supabase link --project-ref <ref>`
-- [ ] 4.2 Push succeeds: `npx supabase db push`
-- [ ] 4.3 No schema drift: `npx supabase db diff --linked`
+- [x] 4.1 Link succeeds: `npx supabase link --project-ref <ref>` — 0be70a2
+- [x] 4.2 Push succeeds: `npx supabase db push` — 0be70a2
+- [x] 4.3 No schema drift: `npx supabase db diff --linked` — 0be70a2
 
 #### Manual
 
-- [ ] 4.4 Hosted Studio shows both tables with RLS enabled and expected policies
-- [ ] 4.5 `npm run dev` against hosted credentials still signs in and reaches `/dashboard`
-- [ ] 4.6 Manual row insert as a real user behaves correctly, then cleaned up
+- [x] 4.4 Hosted Studio shows both tables with RLS enabled and expected policies — 0be70a2
+- [x] 4.5 `npm run dev` against hosted credentials still signs in and reaches `/dashboard` — 0be70a2
+- [x] 4.6 Manual row insert as a real user behaves correctly, then cleaned up — 0be70a2
