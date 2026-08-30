@@ -754,12 +754,12 @@ built; at MVP scale this is negligible and is explicitly out of scope here.
 
 #### Automated
 
-- [x] 4.1 Link succeeds: `npx supabase link --project-ref <ref>`
-- [x] 4.2 Push succeeds: `npx supabase db push`
-- [x] 4.3 No schema drift: `npx supabase db diff --linked`
+- [x] 4.1 Link succeeds: `npx supabase link --project-ref <ref>` — 0be70a2
+- [x] 4.2 Push succeeds: `npx supabase db push` — 0be70a2
+- [x] 4.3 No schema drift: `npx supabase db diff --linked` — 0be70a2
 
 #### Manual
 
-- [x] 4.4 Hosted Studio shows both tables with RLS enabled and expected policies
-- [x] 4.5 `npm run dev` against hosted credentials still signs in and reaches `/dashboard`
-- [x] 4.6 Manual row insert as a real user behaves correctly, then cleaned up
+- [x] 4.4 Hosted Studio shows both tables with RLS enabled and expected policies — 0be70a2
+- [x] 4.5 `npm run dev` against hosted credentials still signs in and reaches `/dashboard` — 0be70a2
+- [x] 4.6 Manual row insert as a real user behaves correctly, then cleaned up — 0be70a2
