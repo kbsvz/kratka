@@ -270,6 +270,51 @@ create trigger patterns_before_insert
   for each row execute function public.patterns_before_insert();
 
 -- ---------------------------------------------------------------------------
+-- Soft delete (FR-013)
+-- ---------------------------------------------------------------------------
+
+-- Deleting CANNOT be a plain UPDATE from the client. PostgreSQL applies the
+-- SELECT policy's USING clause to the *new* row during an UPDATE, and our SELECT
+-- policy requires `deleted_at is null` -- so setting deleted_at moves the row out
+-- of its own visibility and Postgres rejects it with an RLS violation.
+--
+-- That is a feature, not a workaround: it means deleted_at is immutable from the
+-- client, and this function is the single audited path to deletion. RLS does not
+-- apply inside a security definer function, so the `user_id = v_uid` predicate
+-- below is doing the authorization -- treat it as load-bearing.
+create function public.soft_delete_pattern(p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_uid uuid := (select auth.uid());
+begin
+  if v_uid is null then
+    raise exception 'Not authenticated'
+      using errcode = 'KR003';
+  end if;
+
+  update public.patterns
+     set deleted_at = now()
+   where id = p_id
+     and user_id = v_uid      -- authorization; RLS is bypassed in here
+     and deleted_at is null;
+
+  -- Same error whether the pattern belongs to someone else, never existed, or is
+  -- already deleted: do not leak which.
+  if not found then
+    raise exception 'Pattern not found'
+      using errcode = 'KR002';
+  end if;
+end;
+$$;
+
+revoke all on function public.soft_delete_pattern(uuid) from public, anon, authenticated;
+grant execute on function public.soft_delete_pattern(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------------
 -- Update trigger: bump updated_at, pin system-assigned columns
 -- ---------------------------------------------------------------------------
 

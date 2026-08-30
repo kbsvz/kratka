@@ -90,6 +90,21 @@ opening a never-saved pattern, and S-03's print view must not assume the array i
 an unguarded index into an empty array is the failure mode here. The invariant that survives is
 narrower than a strict equality: a grid is either absent or exactly right, never partially wrong.
 
+**Soft delete must go through an RPC, not an UPDATE — discovered during Phase 2.** PostgreSQL
+applies the SELECT policy's `USING` clause to the *new* row during an `UPDATE`. Our SELECT policy
+requires `deleted_at is null`, so setting `deleted_at` moves the row out of its own visibility and
+Postgres rejects the statement with `42501`. The two review decisions — "RLS filters out deleted
+rows" and "deleting is an UPDATE that sets deleted_at" — are mutually exclusive.
+
+Resolved with `soft_delete_pattern(p_id uuid)`, a `security definer` function granted to
+`authenticated` only. RLS does not apply inside it, so its `user_id = (select auth.uid())`
+predicate **is** the authorization — treat that line as load-bearing. It raises `KR002` for a
+missing, already-deleted, or someone-else's pattern without distinguishing them.
+
+The upside of the collision: `deleted_at` is now genuinely immutable from the client, so the RPC
+is the single audited path to deletion. Two pgTAP assertions pin this — a direct UPDATE is
+rejected, and user B cannot delete user A's pattern even when handed a valid id.
+
 **Slot uniqueness must be a partial index.** A plain `UNIQUE (user_id, slot)` would let a
 soft-deleted row hold its slot permanently, so a user who deleted a pattern could never create a
 replacement. Scope the index with `WHERE deleted_at IS NULL`.
@@ -693,26 +708,26 @@ built; at MVP scale this is negligible and is explicitly out of scope here.
 
 #### Automated
 
-- [x] 1.1 Local stack starts: `npx supabase start`
-- [x] 1.2 Migration applies cleanly from scratch: `npx supabase db reset`
+- [x] 1.1 Local stack starts: `npx supabase start` — b726a4a
+- [x] 1.2 Migration applies cleanly from scratch: `npx supabase db reset` — b726a4a
 
 #### Manual
 
-- [x] 1.3 `\d patterns` shows every column, CHECK constraint, and both indexes
-- [x] 1.4 Both tables report RLS enabled in Studio
-- [x] 1.5 `pattern_names` returns the three ordinal names first
+- [x] 1.3 `\d patterns` shows every column, CHECK constraint, and both indexes — b726a4a
+- [x] 1.4 Both tables report RLS enabled in Studio — b726a4a
+- [x] 1.5 `pattern_names` returns the three ordinal names first — b726a4a
 
 ### Phase 2: pgTAP Isolation Tests
 
 #### Automated
 
-- [ ] 2.1 Test suite passes: `npx supabase test db`
-- [ ] 2.2 Suite passes from a clean database: `npx supabase db reset && npx supabase test db`
+- [x] 2.1 Test suite passes: `npx supabase test db`
+- [x] 2.2 Suite passes from a clean database: `npx supabase db reset && npx supabase test db`
 
 #### Manual
 
-- [ ] 2.3 Assertion names and count reviewed — suite is not vacuously passing
-- [ ] 2.4 Deliberately broken policy causes the suite to fail
+- [x] 2.3 Assertion names and count reviewed — suite is not vacuously passing
+- [x] 2.4 Deliberately broken policy causes the suite to fail
 
 ### Phase 3: Generated Types
 
