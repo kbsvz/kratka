@@ -1,8 +1,9 @@
 ---
 project: "kratka"
-version: 1
+version: 2
 status: draft
 created: 2026-06-12
+updated: 2026-08-30
 context_type: greenfield
 product_type: web-app
 target_scale:
@@ -104,8 +105,17 @@ co-equal MVP persona.
   > Socratic: Counter-argument considered: "min 20 is too large for small motifs; max 100 too small for ambitious projects." Resolution: kept; the 100-cell ceiling is a deliberate free-tier boundary (larger grids are the future paid tier) and also protects rendering/print performance (100×100 = 10k cells).
 - FR-005: A user can own at most 3 saved patterns; "New pattern" is disabled with an explanation at the limit, enforced server-side. Priority: must-have
   > Socratic: Counter-argument considered: "3 is too low; engaged designers will hit it and bounce." Resolution: kept; 3 is a deliberate free-tier limit — more patterns are the future paid tier. Reversible.
-- FR-006: A pattern's name is auto-generated on creation (`pattern-1`, `pattern-2`, …). Priority: must-have
-  > Socratic: No domain counter-argument; stands as written (inline rename was cut to the post-MVP scope).
+- FR-006: A pattern's name is auto-generated on creation from a curated name pool. A user's first
+  three patterns — by lifetime creation order, not by how many they currently hold — are named
+  "My Very First Pattern", "My Second Pattern", and "My Third Pattern". Any pattern created after that
+  draws a random name from the wider pool, excluding every name that user has already been
+  assigned — including names belonging to patterns they have since deleted, so a name is never
+  recycled onto different work. Priority: must-have
+  > Socratic: No domain counter-argument; stands as written (inline rename remains cut to the
+  > post-MVP scope). Revised 2026-08-30 from the original `pattern-1`, `pattern-2`, … scheme:
+  > friendlier names cost only one seeded lookup table, and because deleted patterns are retained
+  > rather than erased, the lifetime creation count keeps climbing past three — so the wider pool
+  > is genuinely reachable rather than dead weight.
 - FR-007: A user can define a palette of up to 30 colors via color picker / hex input. Priority: must-have
   > Socratic: Counter-argument considered: "10 colors is too few for real cross-stitch (designs routinely use 20–40 shades), making the tool unusable for the target designer." Resolution: cap raised from 10 to 30 — a usability requirement, not a free/paid lever.
 - FR-008: A user can paint cells by selecting a palette color and clicking or dragging. Priority: must-have
@@ -118,8 +128,16 @@ co-equal MVP persona.
   > Socratic: No domain counter-argument; stands as written.
 - FR-012: A user can open and edit an existing pattern. Priority: must-have
   > Socratic: No domain counter-argument; stands as written.
-- FR-013: A user can delete a pattern. Priority: must-have
-  > Socratic: No domain counter-argument; stands as written.
+- FR-013: A user can delete a pattern, which immediately frees one of their three slots. Deletion
+  is soft: the record is retained for a period rather than erased, but it is invisible to the user
+  — it disappears from their pattern list and cannot be reopened, printed, or restored. Priority:
+  must-have
+  > Socratic: No domain counter-argument on the user-facing behaviour; stands as written. Retention
+  > added 2026-08-30: deletion is a one-click, unconfirmed-by-default action with no undo (undo/redo
+  > is a Non-Goal), so keeping the row briefly makes an accidental delete recoverable by hand rather
+  > than permanently destructive. Retention also preserves the lifetime creation count that FR-006's
+  > naming depends on. No user-facing restore, no "recently deleted" view, and no automated purge in
+  > the MVP — the purge job is post-MVP, so the retention window is intent, not yet enforcement.
 
 ### Estimator & tallies
 - FR-014: The editor shows a live per-color cell count as the user draws. Priority: must-have
