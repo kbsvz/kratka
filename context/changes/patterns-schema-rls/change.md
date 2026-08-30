@@ -1,7 +1,7 @@
 ---
 change_id: patterns-schema-rls
 title: "Patterns schema + owner-scoped RLS"
-status: planned
+status: plan_reviewed
 created: 2026-08-30
 updated: 2026-08-30
 roadmap_ref: F-01
@@ -39,6 +39,7 @@ S-01/S-02/S-03.
 
 - `plan.md` — implementation contract
 - `plan-brief.md` — two-page handoff
+- `reviews/plan-review.md` — pre-code readiness check (9 findings, all fixed)
 
 ## Links
 

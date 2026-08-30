@@ -4,7 +4,7 @@
 
 Create the `patterns` table and a seeded `pattern_names` lookup pool in Supabase, protected by
 owner-scoped Row-Level Security, with a race-free 3-pattern cap, soft delete, and database-level
-invariants that make a desynced grid impossible to store. Prove isolation with pgTAP tests, then
+invariants that make a partially-sized grid impossible to store. Prove isolation with pgTAP, then
 surface the schema to TypeScript via generated types.
 
 This is roadmap foundation `F-01`. It unlocks S-01 (editor), S-02 (pattern list), and S-03
@@ -36,7 +36,8 @@ A `patterns` table exists locally and on the hosted project with owner-scoped RL
 - A logged-in user can read, insert, and update only their own live rows.
 - A user cannot hold more than 3 live patterns, enforced by a unique index rather than a count.
 - Deleting is a soft delete; deleted rows are invisible even to their owner, and free their slot.
-- A row whose `grid` length disagrees with `width × height` cannot be stored at all.
+- A row's `grid` is either empty (never saved) or exactly `width × height` long — no partially
+  sized grid can be stored.
 - `npx supabase test db` passes a pgTAP suite asserting all of the above.
 - `src/types.ts` exports typed `Pattern` entities derived from the real schema, so `astro check`
   verifies downstream code against it.
@@ -80,6 +81,14 @@ hosted push is last and isolated, because it is the only step that touches a rea
 `UPDATE` that sets `deleted_at`. If `WITH CHECK` also required `deleted_at IS NULL`, the row's
 post-update state would violate its own policy and every delete would fail. `USING` restricts
 which rows may be targeted (live, owned); `WITH CHECK` validates the resulting row (owned).
+
+**An empty `grid` is a legal state, and downstream slices must handle it.** `grid` defaults to
+`'[]'` and the length CHECK admits either 0 or exactly `width × height`. This keeps pattern
+creation to a handful of scalars rather than a 10,000-element zero array, but it means a row can
+exist whose grid is not yet dimensioned. S-01 must treat length 0 as "all cells empty" when
+opening a never-saved pattern, and S-03's print view must not assume the array is populated —
+an unguarded index into an empty array is the failure mode here. The invariant that survives is
+narrower than a strict equality: a grid is either absent or exactly right, never partially wrong.
 
 **Slot uniqueness must be a partial index.** A plain `UNIQUE (user_id, slot)` would let a
 soft-deleted row hold its slot permanently, so a user who deleted a pattern could never create a
@@ -149,7 +158,7 @@ create table patterns (
   height     int         not null,
   palette    jsonb       not null default '[]'::jsonb,
   format     text        not null default 'dense-json-v1',
-  grid       jsonb       not null,
+  grid       jsonb       not null default '[]'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz,
@@ -157,10 +166,17 @@ create table patterns (
   constraint patterns_width_range   check (width  between 20 and 100),
   constraint patterns_height_range  check (height between 20 and 100),
   constraint patterns_palette_size  check (jsonb_array_length(palette) <= 30),
-  constraint patterns_grid_length   check (jsonb_array_length(grid) = width * height),
+  -- Empty array = freshly created, never saved. Any other length must match
+  -- the declared dimensions exactly.
+  constraint patterns_grid_length   check (
+    jsonb_array_length(grid) = 0 or jsonb_array_length(grid) = width * height
+  ),
   constraint patterns_slot_range    check (slot between 1 and 3),
   constraint patterns_seq_positive  check (seq >= 1),
-  constraint patterns_user_seq_uniq unique (user_id, seq)
+  constraint patterns_user_seq_uniq unique (user_id, seq),
+  -- Enforces FR-006's never-reuse-a-name rule structurally. Spans deleted rows
+  -- deliberately: a retired name stays retired.
+  constraint patterns_user_name_uniq unique (user_id, name)
 );
 
 -- Race-free 3-pattern cap: only live rows occupy a slot.
@@ -176,9 +192,11 @@ create index patterns_user_live_idx
 
 **File**: same migration
 
-**Intent**: Enable RLS on both tables and grant per-operation, per-role access. No `DELETE`
-policy is created — hard deletes are not reachable through the client; a future purge job runs
-with `service_role`, which bypasses RLS.
+**Intent**: Enable RLS on both tables and grant per-operation, per-role access. Two deliberate
+omissions: no `DELETE` policy (hard deletes are unreachable from the client; a future purge job
+runs as `service_role`, which bypasses RLS), and no policy at all on `pattern_names` (RLS enabled
+with zero policies denies every client read, which is correct while the only reader is the
+`security definer` picker).
 
 **Contract**: policies for role `authenticated` on `patterns`:
 
@@ -198,9 +216,9 @@ create policy patterns_update on patterns for update to authenticated
   using       (user_id = (select auth.uid()) and deleted_at is null)
   with check  (user_id = (select auth.uid()));
 
--- Name pool is read-only reference data.
-create policy pattern_names_select on pattern_names for select to authenticated
-  using (true);
+-- No policy on pattern_names: RLS is enabled with zero policies, which denies all
+-- client access. The name picker reads it as owner via security definer, and no
+-- product surface exposes the pool. Add a select policy only when one does.
 ```
 
 #### 4. Seed data, seq assignment, and name picker
@@ -208,11 +226,42 @@ create policy pattern_names_select on pattern_names for select to authenticated
 **File**: same migration
 
 **Intent**: Seed the name pool with ids 1–3 as the ordinal names plus further names for when the
-cap lifts, then assign `seq` and `name` automatically on insert so S-01's create path supplies
-only `width`, `height`, `palette`, `grid`, and `slot`.
+cap lifts, then derive `slot`, `seq`, and `name` automatically on insert. With `palette` and
+`grid` both defaulting to `'[]'`, the MVP create request carries **`width` and `height` only** —
+every other column is either defaulted or server-derived.
 
-**Contract**: a `before insert` trigger on `patterns`, `security definer`, that sets
-`NEW.seq` and `NEW.name` when they are not supplied.
+**Contract**: a `before insert` trigger on `patterns`, `security definer`, that sets `NEW.slot`,
+`NEW.seq`, and `NEW.name` **unconditionally** — any value supplied by the caller is discarded,
+not respected.
+
+**The three derived columns need different row filters, and getting one wrong is silent.**
+Because `security definer` bypasses RLS, the trigger sees every row for the user — so each query
+must state its own scope explicitly:
+
+| Column | Rows to consider | Rule |
+| --- | --- | --- |
+| `slot` | **live only** (`deleted_at is null`) | lowest unused value in 1–3 |
+| `seq`  | **all rows**, deleted included | `max(seq) + 1` |
+| `name` | **all rows**, deleted included | random pool entry never yet assigned |
+
+Omitting `deleted_at is null` from the slot query makes deleted patterns hold their slots
+forever, so the cap never frees up. Adding it to the `seq` or name query re-creates the exact
+collisions those two are `security definer` to avoid. Same trigger, opposite filters.
+
+**Slot exhaustion**: when all three live slots are taken, the trigger raises a distinct,
+catchable error rather than leaving `slot` null and surfacing a `NOT NULL` violation — S-01 needs
+to tell "you're at your 3-pattern limit" (FR-005's disabled-with-explanation state) apart from a
+genuine fault. The unique index remains the correctness backstop: under concurrent creates two
+transactions can both compute the same free slot, and the loser gets a unique violation the
+caller retries once. Trigger for ergonomics, index for correctness.
+
+This is deliberate, not defensive coding. Per FR-006 the name is always system-assigned and no
+product surface accepts one as input; the MVP create request carries `width` and `height` only.
+Making assignment unconditional means S-01 physically cannot get naming wrong regardless of how
+its endpoint is written — a mass-assigning `insert({...body, user_id})` is a common shape, and
+under conditional assignment a stray `name` in the request body would flow straight through.
+It also keeps this consistent with how every other guarantee in this migration is enforced:
+structurally, not by remembering to be careful at the call site.
 
 `security definer` is **required, not stylistic**: `seq` is unique across all of a user's rows
 including soft-deleted ones, but the SELECT policy hides deleted rows. An invoker-rights
@@ -229,14 +278,21 @@ onto different content. The `security definer` context that `seq` already requir
 this possible; under invoker rights the deleted rows would be invisible and names would silently
 come back.
 
+`unique (user_id, name)` is the structural backstop for that rule — the trigger's SELECT chooses
+a free name, the constraint guarantees it. It also closes the concurrency hole the SELECT alone
+leaves open: two simultaneous creates for one user could otherwise both pick the same unused
+name, and the loser now fails loudly instead of silently duplicating. Every name source satisfies
+it by construction — ordinals 1–3 map to unique `seq` values, pool names are excluded once
+assigned, and the `'My Pattern ' || seq` fallback embeds a per-user-unique `seq`.
+
 Because names are consumed monotonically and never returned to the pool, a user with a long
 delete-and-recreate history can exhaust it. Fall back to `'My Pattern ' || seq`, which is itself
-collision-free since `seq` is unique per user. With 45 pool names seeded, exhaustion requires 48
+collision-free since `seq` is unique per user. With 56 pool names seeded, exhaustion requires 59
 lifetime creations by one user — unreachable in practice at MVP scale.
 
 Seed data, verbatim. Ids 1–3 are the ordinals returned for a user's first three patterns and must
-never be renumbered; 4–48 are the random pool. Additional names go in a *new* migration starting
-at 49 — never edit this block once it has been pushed to hosted.
+never be renumbered; 4–59 are the random pool. Additional names go in a *new* migration starting
+at 60 — never edit this block once it has been pushed to hosted.
 
 ```sql
 insert into pattern_names (id, name) values
@@ -287,18 +343,41 @@ insert into pattern_names (id, name) values
   (45, 'Serious Squares'),
   (46, 'Pixel Party'),
   (47, 'Just Pixels'),
-  (48, 'Pixel Picnic')
+  (48, 'Pixel Picnic'),
+  (49, 'My Best Work Yet'),
+  (50, 'Masterpiece'),
+  (51, 'Working Title'),
+  (52, 'Call It Something'),
+  (53, 'Placeholder Name'),
+  (54, 'Ta-da'),
+  (55, 'Creative Spark'),
+  (56, 'Creative Moment'),
+  (57, 'Creative Flow'),
+  (58, 'Creative Bloom'),
+  (59, 'Creative Boost')
 on conflict (id) do nothing;
 ```
 
-#### 5. `updated_at` maintenance
+#### 5. Update guard and `updated_at` maintenance
 
 **File**: same migration
 
-**Intent**: Keep `updated_at` accurate without trusting callers, since FR-011 surfaces it in the
-pattern list.
+**Intent**: Keep `updated_at` accurate without trusting callers (FR-011 surfaces it in the pattern
+list), and make the system-assigned identity columns immutable so FR-006's "cannot modify it
+afterwards" holds at the database rather than by endpoint discipline.
 
-**Contract**: `set_updated_at()` trigger function plus a `before update` trigger on `patterns`.
+**Contract**: one `before update` trigger on `patterns` that sets `NEW.updated_at := now()` and
+restores `NEW.seq := OLD.seq`, `NEW.name := OLD.name`, `NEW.user_id := OLD.user_id`.
+
+Restoring rather than raising an exception is deliberate: a client that sends the full row back
+on save — the natural shape for S-01's Save button — would otherwise fail on every update simply
+for echoing values it never changed. Silently pinning them keeps that flow working while making
+rename impossible. `user_id` is pinned for the same reason it matters most: the UPDATE policy's
+`WITH CHECK` already prevents reassigning a row to another user, but pinning removes the question
+entirely.
+
+Note this trigger fires on soft delete too, so a deleted row's `updated_at` reflects the deletion
+time — `deleted_at` remains the authoritative timestamp for when it happened.
 
 ### Success Criteria:
 
@@ -306,7 +385,6 @@ pattern list.
 
 - Local stack starts: `npx supabase start`
 - Migration applies cleanly from scratch: `npx supabase db reset`
-- Linting passes: `npm run lint`
 
 #### Manual Verification:
 
@@ -330,26 +408,70 @@ reviewed-but-untested policy set is the failure mode F-01's risk note warns abou
 
 #### 1. Test suite
 
-**File**: `supabase/tests/patterns_rls.test.sql`
+**File**: `supabase/tests/database/patterns_rls.test.sql`
 
 **Intent**: Assert isolation, cap enforcement, soft-delete invisibility, and constraint rejection
 against two seeded users.
 
-**Contract**: pgTAP file discovered by `supabase test db`. Creates two users in `auth.users`,
-then switches identity per block:
+**Contract**: pgTAP file. `supabase test db` defaults to the `supabase/tests` directory and
+recurses, so the `database/` subdirectory — Supabase's documented convention — is discovered
+automatically; no path argument is needed.
+
+The extension is created **in the test file, not in a migration**. Migrations are pushed to the
+hosted project in Phase 4, and pgTAP has no business on production. Creating it outside the
+transaction persists it locally while keeping it out of the migration history:
 
 ```sql
--- Impersonation pattern used throughout; forgetting this runs as superuser
--- and every assertion passes vacuously.
+create extension if not exists pgtap with schema extensions;
+
+begin;
+select plan(<N>);          -- exact assertion count; pgTAP fails the run if it disagrees
+
+-- ... fixtures and assertions ...
+
+select * from finish();
+rollback;                  -- fixtures never persist; the suite is re-runnable
+```
+
+**Fixtures.** `patterns.user_id` carries an FK to `auth.users(id)`, so the suite needs two real
+rows there — setting a JWT claim to an arbitrary uuid is not enough. Insert them before switching
+roles, while still running unrestricted:
+
+```sql
+insert into auth.users (instance_id, id, aud, role, email, encrypted_password,
+                        created_at, updated_at)
+values ('00000000-0000-0000-0000-000000000000', '<uuid-a>', 'authenticated',
+        'authenticated', 'a@test.local', '', now(), now()),
+       ('00000000-0000-0000-0000-000000000000', '<uuid-b>', 'authenticated',
+        'authenticated', 'b@test.local', '', now(), now());
+```
+
+`instance_id`, `aud`, and `role` are NOT NULL without defaults — omitting them is the usual
+first failure. Confirm the column set against the local schema (`\d auth.users`) before writing
+the file, since GoTrue's table has changed shape across Supabase versions.
+
+**Assert the fixtures first.** The suite's opening assertions should confirm both users exist.
+Without that, a fixture problem and a policy problem produce similarly opaque failures, and the
+first thing you'd doubt is the policy — which is the one thing this suite exists to trust.
+
+Identity is switched per assertion block. Forgetting this runs as superuser, which bypasses RLS
+and makes every isolation assertion pass vacuously:
+
+```sql
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"<user-uuid>","role":"authenticated"}';
 ```
 
+Use `reset role;` between blocks when fixture setup needs to run unrestricted.
+
 Assertions to cover:
 - User B cannot `select` user A's row (0 rows, not an error)
 - User B cannot `update` user A's row (0 rows affected)
-- A 4th live insert for one user raises a unique violation
-- After soft-deleting slot 2, a new insert into slot 2 succeeds
+- A 4th live insert for one user raises the trigger's distinct slot-exhaustion error (not a
+  `NOT NULL` violation), and the row count stays at 3
+- Inserts land in slots 1, 2, 3 in order without the caller specifying one
+- After soft-deleting the pattern in slot 2, the next insert reclaims slot 2 — the regression test
+  for the `deleted_at is null` filter on the slot query
 - A soft-deleted row is invisible to its own owner
 - `seq` cannot be reused for the same user
 - **Soft-delete the highest-`seq` pattern, then create another — it succeeds and receives a
@@ -358,7 +480,11 @@ Assertions to cover:
 - **A soft-deleted pattern's name is never reissued to the same user.** Delete a pattern, create
   several more, and assert the retired name does not reappear. The second `security definer`
   regression test — under invoker rights the deleted row is invisible and the name recycles.
-- Each CHECK rejects: width 10, height 200, 31-color palette, grid length ≠ width × height
+- Each CHECK rejects: width 10, height 200, 31-color palette
+- Grid length CHECK: an empty array is **accepted** (freshly created), a full `width × height`
+  array is accepted, and any other length — including off-by-one — is rejected
+- An insert supplying `seq` and `name` has both values discarded and replaced by the trigger
+- An update attempting to change `name` or `seq` leaves the stored values unchanged
 
 ### Success Criteria:
 
@@ -388,7 +514,7 @@ home, giving the build something real to check downstream code against.
 
 #### 1. Generated database types
 
-**File**: `src/db/database.types.ts`
+**File**: `src/lib/database.types.ts`
 
 **Intent**: Machine-generated mirror of the schema; never hand-edited.
 
@@ -537,13 +663,12 @@ built; at MVP scale this is negligible and is explicitly out of scope here.
 
 - [ ] 1.1 Local stack starts: `npx supabase start`
 - [ ] 1.2 Migration applies cleanly from scratch: `npx supabase db reset`
-- [ ] 1.3 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 1.4 `\d patterns` shows every column, CHECK constraint, and both indexes
-- [ ] 1.5 Both tables report RLS enabled in Studio
-- [ ] 1.6 `pattern_names` returns the three ordinal names first
+- [ ] 1.3 `\d patterns` shows every column, CHECK constraint, and both indexes
+- [ ] 1.4 Both tables report RLS enabled in Studio
+- [ ] 1.5 `pattern_names` returns the three ordinal names first
 
 ### Phase 2: pgTAP Isolation Tests
 

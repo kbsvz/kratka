@@ -105,12 +105,13 @@ co-equal MVP persona.
   > Socratic: Counter-argument considered: "min 20 is too large for small motifs; max 100 too small for ambitious projects." Resolution: kept; the 100-cell ceiling is a deliberate free-tier boundary (larger grids are the future paid tier) and also protects rendering/print performance (100×100 = 10k cells).
 - FR-005: A user can own at most 3 saved patterns; "New pattern" is disabled with an explanation at the limit, enforced server-side. Priority: must-have
   > Socratic: Counter-argument considered: "3 is too low; engaged designers will hit it and bounce." Resolution: kept; 3 is a deliberate free-tier limit — more patterns are the future paid tier. Reversible.
-- FR-006: A pattern's name is auto-generated on creation from a curated name pool. A user's first
-  three patterns — by lifetime creation order, not by how many they currently hold — are named
+- FR-006: A user's first three patterns — by lifetime creation order, not by how many they currently hold — are named
   "My Very First Pattern", "My Second Pattern", and "My Third Pattern". Any pattern created after that
   draws a random name from the wider pool, excluding every name that user has already been
   assigned — including names belonging to patterns they have since deleted, so a name is never
-  recycled onto different work. Priority: must-have
+  recycled onto different work. The name is always assigned by the system: a user can neither
+  choose one at creation nor modify it afterwards, and no surface in the product accepts a name
+  as input. Priority: must-have
   > Socratic: No domain counter-argument; stands as written (inline rename remains cut to the
   > post-MVP scope). Revised 2026-08-30 from the original `pattern-1`, `pattern-2`, … scheme:
   > friendlier names cost only one seeded lookup table, and because deleted patterns are retained

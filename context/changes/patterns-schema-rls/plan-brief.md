@@ -80,8 +80,8 @@ hosted project credentials in `.dev.vars` (confirmed).
   a period" but names no window, and no purge job exists — so in the MVP nothing is ever actually
   deleted. Harmless at this scale; becomes a real obligation the moment account deletion or any
   privacy commitment enters scope.
-- Names are consumed monotonically and never returned, so the pool is finite per user. 45 pool
-  names are seeded, meaning exhaustion needs 48 lifetime creations by one person — unreachable at
+- Names are consumed monotonically and never returned, so the pool is finite per user. 56 pool
+  names are seeded, meaning exhaustion needs 59 lifetime creations by one person — unreachable at
   MVP scale, but the `'My Pattern N'` fallback exists for it.
 - Both `seq` and name assignment depend on a `security definer` trigger to read past RLS. Drop
   that qualifier in a future refactor and two narrow failures appear: creation breaks for users
