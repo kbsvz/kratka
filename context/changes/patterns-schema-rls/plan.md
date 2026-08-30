@@ -575,8 +575,16 @@ the regeneration command.
 **Intent**: Re-export ergonomic entity and DTO aliases over the generated `Database` type, so
 S-01/S-02/S-03 import domain names rather than reaching into generated internals.
 
-**Contract**: exports `Pattern` (row), `PatternInsert`, `PatternUpdate`, `PatternListItem`
-(the `name`/`width`/`height`/`updated_at` subset FR-011 needs), and `PaletteColor`.
+**Contract**: exports `Pattern` (the row), `PatternCreate`, `PatternUpdate`, `PatternListItem`
+(the subset FR-011 renders), `PaletteColor`, `PatternPalette`, and `PatternGrid`.
+
+`PatternCreate` and `PatternUpdate` are deliberately narrower than the generated `Insert`/`Update`
+shapes, which describe columns but not the triggers wrapped around them. The generator marks a
+column optional only when it is nullable or carries a `DEFAULT`; it does not read triggers. So the
+generated `Insert` reports `name`, `seq` and `slot` as *required* when in truth the BEFORE INSERT
+trigger discards whatever is supplied, and the generated `Update` offers columns the BEFORE UPDATE
+trigger pins. The raw shapes are not re-exported — `Database[...]["Insert"]` remains reachable
+directly for the rare caller that wants it.
 
 #### 3. Typed Supabase client
 
@@ -721,26 +729,26 @@ built; at MVP scale this is negligible and is explicitly out of scope here.
 
 #### Automated
 
-- [x] 2.1 Test suite passes: `npx supabase test db`
-- [x] 2.2 Suite passes from a clean database: `npx supabase db reset && npx supabase test db`
+- [x] 2.1 Test suite passes: `npx supabase test db` — d8ce765
+- [x] 2.2 Suite passes from a clean database: `npx supabase db reset && npx supabase test db` — d8ce765
 
 #### Manual
 
-- [x] 2.3 Assertion names and count reviewed — suite is not vacuously passing
-- [x] 2.4 Deliberately broken policy causes the suite to fail
+- [x] 2.3 Assertion names and count reviewed — suite is not vacuously passing — d8ce765
+- [x] 2.4 Deliberately broken policy causes the suite to fail — d8ce765
 
 ### Phase 3: Generated Types
 
 #### Automated
 
-- [ ] 3.1 Types generate without error: `npx supabase gen types typescript --local`
-- [ ] 3.2 Type checking passes: `npx astro check`
-- [ ] 3.3 Linting passes: `npm run lint`
-- [ ] 3.4 Build passes: `npm run build`
+- [x] 3.1 Types generate without error: `npx supabase gen types typescript --local`
+- [x] 3.2 Type checking passes: `npx astro check`
+- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.4 Build passes: `npm run build`
 
 #### Manual
 
-- [ ] 3.5 `src/types.ts` exports read naturally for S-01 consumption
+- [x] 3.5 `src/types.ts` exports read naturally for S-01 consumption
 
 ### Phase 4: Push to Hosted Project
 
