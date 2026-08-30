@@ -10,6 +10,11 @@ otherwise a job people improvise with spreadsheets or graph paper.
 Free accounts keep up to three patterns. Every pattern prints as a clean chart — grid and
 colour legend only, no app furniture on the page.
 
+**A little extra if you stitch.** Cross-stitch charts get a bonus on the printout: the legend
+also totals how much thread each colour needs, and how long the whole piece is likely to take.
+The editor and the chart are the same whatever you're making — this is just the first
+craft-specific flourish, and there's room for more.
+
 ## Status
 
 Early. Auth and the data layer are in place; the editor itself is not built yet.
