@@ -741,25 +741,25 @@ built; at MVP scale this is negligible and is explicitly out of scope here.
 
 #### Automated
 
-- [x] 3.1 Types generate without error: `npx supabase gen types typescript --local`
-- [x] 3.2 Type checking passes: `npx astro check`
-- [x] 3.3 Linting passes: `npm run lint`
-- [x] 3.4 Build passes: `npm run build`
+- [x] 3.1 Types generate without error: `npx supabase gen types typescript --local` — fa76eed
+- [x] 3.2 Type checking passes: `npx astro check` — fa76eed
+- [x] 3.3 Linting passes: `npm run lint` — fa76eed
+- [x] 3.4 Build passes: `npm run build` — fa76eed
 
 #### Manual
 
-- [x] 3.5 `src/types.ts` exports read naturally for S-01 consumption
+- [x] 3.5 `src/types.ts` exports read naturally for S-01 consumption — fa76eed
 
 ### Phase 4: Push to Hosted Project
 
 #### Automated
 
-- [ ] 4.1 Link succeeds: `npx supabase link --project-ref <ref>`
-- [ ] 4.2 Push succeeds: `npx supabase db push`
-- [ ] 4.3 No schema drift: `npx supabase db diff --linked`
+- [x] 4.1 Link succeeds: `npx supabase link --project-ref <ref>`
+- [x] 4.2 Push succeeds: `npx supabase db push`
+- [x] 4.3 No schema drift: `npx supabase db diff --linked`
 
 #### Manual
 
-- [ ] 4.4 Hosted Studio shows both tables with RLS enabled and expected policies
-- [ ] 4.5 `npm run dev` against hosted credentials still signs in and reaches `/dashboard`
-- [ ] 4.6 Manual row insert as a real user behaves correctly, then cleaned up
+- [x] 4.4 Hosted Studio shows both tables with RLS enabled and expected policies
+- [x] 4.5 `npm run dev` against hosted credentials still signs in and reaches `/dashboard`
+- [x] 4.6 Manual row insert as a real user behaves correctly, then cleaned up
