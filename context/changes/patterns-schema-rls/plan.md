@@ -586,7 +586,21 @@ trigger discards whatever is supplied, and the generated `Update` offers columns
 trigger pins. The raw shapes are not re-exported — `Database[...]["Insert"]` remains reachable
 directly for the rare caller that wants it.
 
-#### 3. Typed Supabase client
+#### 3. Exclude the generated file from formatters
+
+**File**: `eslint.config.js`, `.prettierignore`
+
+**Intent**: Keep the generated types out of ESLint and Prettier. It arrives unformatted and
+produces ~126 `prettier/prettier` errors; formatting it would be reverted by the next
+`supabase gen types` run, so every schema change would carry a formatting diff.
+
+**Contract**: an `{ ignores: ["src/lib/database.types.ts"] }` entry in `eslint.config.js` (note
+the config resolves ignores through `includeIgnoreFile(gitignorePath)`, so `.gitignore` cannot be
+used — the file must stay committed for CI to type-check and build without a database), plus a
+`.prettierignore` carrying the same path so `npm run format` leaves it alone. The file is still
+fully type-checked by `tsc` via `astro check`.
+
+#### 4. Typed Supabase client
 
 **File**: `src/lib/supabase.ts`
 
