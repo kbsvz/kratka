@@ -41,7 +41,7 @@ Crafters designing original cross-stitch schemes currently improvise with spread
 
 | ID   | Change ID           | Outcome (user can …)                                                                                                                                                               | Prerequisites | PRD refs                                                                                                    | Status   |
 |------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|-------------------------------------------------------------------------------------------------------------|----------|
-| F-01 | patterns-schema-rls | (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible                          | —          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-011, FR-012, FR-013; Access Control                      | planning |
+| F-01 | patterns-schema-rls | (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible                          | —          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-011, FR-012, FR-013; Access Control                      | in-progress |
 | S-01 | editor-draw-save    | create a pattern (set grid size), define a color palette, paint and erase cells with live per-color count, save it, and reopen any saved pattern to continue editing               | F-01 | FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-012, FR-014, FR-019 | proposed |
 | S-02 | pattern-list-manage | see all their saved patterns (name, grid size, last updated) and delete a pattern to free a slot                                                                                   | F-01          | FR-003, FR-011, FR-013                                                                                      | proposed |
 | S-03 | color-print-view    | open a clean print view for a saved pattern showing the grid, per-color thread counts, and a total time estimate; print via the browser's native dialog with no app UI on the page | S-01 | FR-003, FR-015, FR-016, FR-017, FR-019                                          | proposed |
@@ -80,7 +80,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** RLS policies enforce the primary security guardrail ("a user can never see or modify another user's patterns") at the database layer; establishing this first means every downstream slice gets isolation for free and cannot accidentally omit it. A misconfigured policy here silently violates a guardrail across all slices.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Slices
 

@@ -1,7 +1,7 @@
 ---
 change_id: patterns-schema-rls
 title: "Patterns schema + owner-scoped RLS"
-status: plan_reviewed
+status: implementing
 created: 2026-08-30
 updated: 2026-08-30
 roadmap_ref: F-01

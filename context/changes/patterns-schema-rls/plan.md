@@ -102,6 +102,38 @@ trigger is `security definer`. Both failures are narrow — the first hits only 
 their most recent pattern, the second is invisible until someone notices a familiar name on
 unfamiliar work — so each has its own pgTAP assertion rather than relying on incidental coverage.
 
+**Supabase's default privileges grant ALL on new `public` tables and functions to `anon` and
+`authenticated` — start from deny, not from patching.** This tripped two separate Supabase
+advisors during implementation, both from the same root cause:
+
+- *Public Can Execute SECURITY DEFINER Function* — the trigger functions were executable by
+  `anon`. Revoking is safe: trigger permissions are checked when the trigger is *created*, not
+  when it fires, so triggers keep working with no EXECUTE grant at all.
+- *Public Can See Object in GraphQL Schema* — `anon` retained SELECT on `patterns`, making the
+  table discoverable to anyone holding the public anon key. RLS still denied every row (no anon
+  policy), so this was schema disclosure, not data disclosure — but FR-003 says an
+  unauthenticated visitor sees only the landing page, and a discoverable table contradicts that.
+
+The migration therefore issues `revoke all ... from anon, authenticated` on both tables and all
+three functions first, then grants back exactly `select, insert, update on patterns to
+authenticated`. Revoking individual privileges (`revoke delete ...`) leaves the rest silently
+granted — that is precisely how the second advisor slipped through the first fix.
+
+Verify with `has_table_privilege` / `has_function_privilege` rather than reading the migration,
+and re-check the Advisors tab after the Phase 4 hosted push.
+
+**Advisor 0027 ("Signed-In Users Can See Object in GraphQL Schema") is expected — do not fix it.**
+It fires because `authenticated` can SELECT `patterns`, which is required: table-level grants are
+checked *before* RLS, so without the grant the `patterns_select` policy never evaluates and every
+downstream slice gets `permission denied for table patterns`. Signed-in users discovering that
+`patterns` exists is correct; RLS keeps them to their own rows. Its sibling 0026 (the `anon`
+variant) *was* worth fixing — signed-out visitors should discover nothing (FR-003). Expect 0027
+to reappear on the hosted project after Phase 4; dismiss it there too.
+
+Noted but not acted on: `graphql_public` is an exposed schema and `pg_graphql` is installed, yet
+kratka uses no GraphQL anywhere. Dropping it would remove this advisor class entirely, but that's
+a project-wide API config change outside this foundation's scope.
+
 **Table creation and RLS must be in the same migration file.** A migration that creates the table
 and a later one that enables RLS leaves a window where the table is world-readable through
 PostgREST.
@@ -345,7 +377,7 @@ insert into pattern_names (id, name) values
   (47, 'Just Pixels'),
   (48, 'Pixel Picnic'),
   (49, 'My Best Work Yet'),
-  (50, 'Masterpiece'),
+  (50, 'Another Masterpiece'),
   (51, 'Working Title'),
   (52, 'Call It Something'),
   (53, 'Placeholder Name'),
@@ -661,14 +693,14 @@ built; at MVP scale this is negligible and is explicitly out of scope here.
 
 #### Automated
 
-- [ ] 1.1 Local stack starts: `npx supabase start`
-- [ ] 1.2 Migration applies cleanly from scratch: `npx supabase db reset`
+- [x] 1.1 Local stack starts: `npx supabase start`
+- [x] 1.2 Migration applies cleanly from scratch: `npx supabase db reset`
 
 #### Manual
 
-- [ ] 1.3 `\d patterns` shows every column, CHECK constraint, and both indexes
-- [ ] 1.4 Both tables report RLS enabled in Studio
-- [ ] 1.5 `pattern_names` returns the three ordinal names first
+- [x] 1.3 `\d patterns` shows every column, CHECK constraint, and both indexes
+- [x] 1.4 Both tables report RLS enabled in Studio
+- [x] 1.5 `pattern_names` returns the three ordinal names first
 
 ### Phase 2: pgTAP Isolation Tests
 
