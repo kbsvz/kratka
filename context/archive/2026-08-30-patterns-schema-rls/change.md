@@ -1,9 +1,10 @@
 ---
 change_id: patterns-schema-rls
 title: "Patterns schema + owner-scoped RLS"
-status: impl_reviewed
+status: archived
 created: 2026-08-30
-updated: 2026-08-30
+updated: 2026-08-31
+archived_at: 2026-08-31T16:42:43Z
 roadmap_ref: F-01
 prd_refs:
   - FR-001
