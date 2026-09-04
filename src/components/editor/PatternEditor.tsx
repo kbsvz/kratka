@@ -56,7 +56,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
     const gridWidthPx = pattern.width * CELL_SIZE;
     const gridHeightPx = pattern.height * CELL_SIZE;
     for (let col = 0; col <= pattern.width; col++) {
-      const heavy = col % HEAVY_LINE_EVERY === 0;
+      const heavy = col % HEAVY_LINE_EVERY === 0 || col === pattern.width;
       ctx.strokeStyle = heavy ? "#00000088" : "#00000022";
       ctx.lineWidth = heavy ? 1.5 : 1;
       const x = Math.round(col * CELL_SIZE) + 0.5;
@@ -66,7 +66,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
       ctx.stroke();
     }
     for (let row = 0; row <= pattern.height; row++) {
-      const heavy = row % HEAVY_LINE_EVERY === 0;
+      const heavy = row % HEAVY_LINE_EVERY === 0 || row === pattern.height;
       ctx.strokeStyle = heavy ? "#00000088" : "#00000022";
       ctx.lineWidth = heavy ? 1.5 : 1;
       const y = Math.round(row * CELL_SIZE) + 0.5;
