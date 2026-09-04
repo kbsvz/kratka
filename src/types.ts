@@ -40,3 +40,15 @@ export type PatternUpdate = Partial<Pick<Pattern, "palette" | "grid">>;
 
 /** The columns FR-011's pattern list renders. */
 export type PatternListItem = Pick<Pattern, "id" | "name" | "width" | "height" | "updated_at">;
+
+/**
+ * The columns the editor loads on reopen and writes back on Save (FR-012).
+ *
+ * `palette`/`grid` are narrowed from `Pattern`'s generated `Json` columns to
+ * their domain types — the generated `Row` shape can't express the
+ * CHECK-constrained structure those columns actually hold.
+ */
+export type PatternEditorData = Pick<Pattern, "id" | "name" | "width" | "height"> & {
+  palette: PatternPalette;
+  grid: PatternGrid;
+};

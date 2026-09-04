@@ -3,7 +3,7 @@ project: "kratka"
 version: 1
 status: draft
 created: 2026-08-27
-updated: 2026-08-30
+updated: 2026-09-03
 prd_version: 2
 main_goal: speed
 top_blocker: capacity
@@ -41,8 +41,8 @@ Crafters designing original cross-stitch schemes currently improvise with spread
 
 | ID   | Change ID           | Outcome (user can …)                                                                                                                                                               | Prerequisites | PRD refs                                                                                                    | Status   |
 |------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|-------------------------------------------------------------------------------------------------------------|----------|
-| F-01 | patterns-schema-rls | (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible                          | —          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-011, FR-012, FR-013; Access Control                      | in-progress |
-| S-01 | editor-draw-save    | create a pattern (set grid size), define a color palette, paint and erase cells with live per-color count, save it, and reopen any saved pattern to continue editing               | F-01 | FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-012, FR-014, FR-019 | proposed |
+| F-01 | patterns-schema-rls | (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible                          | —          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-011, FR-012, FR-013; Access Control                      | done |
+| S-01 | editor-draw-save    | create a pattern (set grid size), define a color palette, paint and erase cells with live per-color count, save it, and reopen any saved pattern to continue editing               | F-01 | FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-012, FR-014, FR-019 | in-progress |
 | S-02 | pattern-list-manage | see all their saved patterns (name, grid size, last updated) and delete a pattern to free a slot                                                                                   | F-01          | FR-003, FR-011, FR-013                                                                                      | proposed |
 | S-03 | color-print-view    | open a clean print view for a saved pattern showing the grid, per-color thread counts, and a total time estimate; print via the browser's native dialog with no app UI on the page | S-01 | FR-003, FR-015, FR-016, FR-017, FR-019                                          | proposed |
 
@@ -80,7 +80,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** RLS policies enforce the primary security guardrail ("a user can never see or modify another user's patterns") at the database layer; establishing this first means every downstream slice gets isolation for free and cannot accidentally omit it. A misconfigured policy here silently violates a guardrail across all slices.
-- **Status:** in-progress
+- **Status:** done
 
 ## Slices
 
@@ -88,7 +88,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 - **Outcome:** user can create a new pattern by setting grid dimensions (20–100 × 20–100), define a color palette of up to 30 colors via color picker or hex input, paint and erase cells on the grid with a live per-color cell count displayed in the editor, save the pattern via a Save button (with an unsaved-changes warning before navigating away), and reopen any previously saved pattern to continue editing — with the exact same grid, palette, and dimensions restored.
 - **Change ID:** editor-draw-save
-- **PRD refs:** FR-003 (new pattern and editor routes added to `PROTECTED_ROUTES`), FR-004 (create pattern with configurable grid dimensions 20–100), FR-005 (3-pattern cap enforced server-side; "New pattern" disabled with explanation at the limit), FR-006 (auto-generated name on creation: `pattern-1`, `pattern-2`, …), FR-007 (palette of up to 30 colors via color picker / hex input), FR-008 (paint cells by selecting a palette color and clicking or dragging), FR-009 (erase cells by clicking or dragging), FR-010 (save via Save button; unsaved-changes guardrail), FR-012 (open and continue editing an existing pattern), FR-014 (live per-color cell count updated as the user draws), FR-019 (heavy gridline every 10th row and column with edge numbers in the editor)
+- **PRD refs:** FR-003 (new pattern and editor routes added to `PROTECTED_ROUTES`), FR-004 (create pattern with configurable grid dimensions 20–100), FR-005 (3-pattern cap enforced server-side; "New pattern" disabled with explanation at the limit), FR-006 (system-assigned name on creation: first three patterns get the fixed names "My Very First Pattern", "My Second Pattern", "My Third Pattern"; any pattern beyond that draws a random name from the wider pool, excluding every name the user has ever been assigned — including names of deleted patterns — so no name is recycled), FR-007 (palette of up to 30 colors via color picker / hex input), FR-008 (paint cells by selecting a palette color and clicking or dragging), FR-009 (erase cells by clicking or dragging), FR-010 (save via Save button; unsaved-changes guardrail), FR-012 (open and continue editing an existing pattern), FR-014 (live per-color cell count updated as the user draws), FR-019 (heavy gridline every 10th row and column with edge numbers in the editor)
 - **Prerequisites:** F-01
 - **Parallel with:** S-02 (both depend only on F-01; neither depends on the other)
 - **Blockers:** —
@@ -96,7 +96,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - What rendering approach (CSS grid, canvas, SVG) achieves < 100 ms paint feedback on a 100×100 grid in the target desktop browsers without excessive memory use? — Owner: team. Block: no (plannable; technical research belongs in `/10x-plan editor-draw-save`).
   - How does a user navigate to reopen a specific saved pattern before S-02's list exists? — Owner: team. Block: no (a direct route to a known pattern ID, e.g. `/editor/<id>`, is sufficient to verify FR-012 for this slice; building any pattern list/picker UI is explicitly out of scope here — that's S-02's job).
 - **Risk:** The largest slice by FR count, necessarily so — create, draw, and save are inseparable steps in one user workflow; none is independently useful. The main execution risk is grid rendering performance on large grids; this must be prototyped early within the change, not left for the end.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-02: Pattern list and slot management
 
@@ -127,7 +127,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 | Roadmap ID | Change ID           | Suggested issue title                                                 | Ready for `/10x-plan` | Notes                                                              |
 |------------|---------------------|-----------------------------------------------------------------------|-----------------------|--------------------------------------------------------------------|
-| F-01       | patterns-schema-rls | Supabase migration: patterns + pattern_names tables, owner-scoped RLS | planned               | Plan written: `context/changes/patterns-schema-rls/plan.md`. Run `/10x-implement patterns-schema-rls phase 1`. |
+| F-01       | patterns-schema-rls | Supabase migration: patterns + pattern_names tables, owner-scoped RLS | no                    | Plan written: `context/changes/patterns-schema-rls/plan.md`. Run `/10x-implement patterns-schema-rls phase 1`. |
 | S-01       | editor-draw-save    | Grid editor: create pattern, paint palette, live count, save, reopen  | no                    | Awaits F-01. Prototype grid rendering performance early within the change. |
 | S-02       | pattern-list-manage | Pattern dashboard: list all patterns, delete a pattern                | no                    | Awaits F-01. Parallel with S-01 — can run as a separate agent task. |
 | S-03       | color-print-view    | Print view: color grid, thread-count legend, time estimate, print CSS | no                    | Awaits S-01. Parallel with S-02 once S-01 is done.                 |
@@ -164,3 +164,5 @@ From PRD `## Non-Goals` — all confirmed during shaping:
 ## Done
 
 (Empty on first generation. `/10x-archive` appends an entry here — and flips the item's `Status` to `done` — when a change whose `Change ID` matches a roadmap item is archived.)
+
+- **F-01: (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible** — Archived 2026-08-31 → `context/archive/2026-08-30-patterns-schema-rls/`. Lesson: —.

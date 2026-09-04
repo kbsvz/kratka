@@ -111,7 +111,7 @@
 }
 
 @utility bg-cosmic {
-  background-image: linear-gradient(to bottom, #0a0e1a, #0f1529, #0a0e1a);
+  background-color: oklch(0.9543 0.0123 74.65);
 }
 
 @layer base {
