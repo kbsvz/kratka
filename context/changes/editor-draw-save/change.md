@@ -1,9 +1,9 @@
 ---
 change_id: editor-draw-save
 title: "Grid editor: create pattern, paint palette, live count, save, reopen"
-status: planned
+status: implementing
 created: 2026-08-31
-updated: 2026-09-02
+updated: 2026-09-03
 archived_at: null
 roadmap_ref: S-01
 prd_refs:
@@ -44,3 +44,18 @@ print view (S-03).
 ## Notes
 
 <!-- Free-form notes for this change: links, ad-hoc context, decisions that don't belong in research/frame/plan. -->
+
+- **2026-09-04 — cleanup needed on the remote Supabase project.** `.dev.vars`
+  was pointing `SUPABASE_URL`/`SUPABASE_KEY` at the linked remote project
+  (`https://htxbolpzbhzjbakllkyl.supabase.co`) instead of the local Docker
+  stack, contrary to README's setup instructions — discovered while
+  browser-testing Phase 1. A manual smoke test against the running dev server
+  therefore created real rows there: user `smoketest@example.com` and 3 test
+  patterns (one named "My Very First Pattern", ~20×20, a few cells painted;
+  two more created empty while probing the 3-pattern cap). **Confirmed a
+  config mistake** (not intentional) and fixed the same day: `.dev.vars` now
+  points at `http://127.0.0.1:54321` with the local stack's publishable key.
+  The remote test data itself is still there — left in place per user
+  decision (2026-09-04), clean up by deleting the `smoketest@example.com`
+  auth user (cascades to its patterns) before this project has real users.
+  Restarting `npm run dev` is required to pick up the corrected `.dev.vars`.

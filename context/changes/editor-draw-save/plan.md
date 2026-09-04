@@ -480,10 +480,10 @@ supports everything this plan needs.
 
 #### Automated
 
-- [ ] 1.1 Lint passes
-- [ ] 1.2 Type-check passes
-- [ ] 1.3 Build succeeds
-- [ ] 1.4 DB tests still pass
+- [x] 1.1 Lint passes
+- [x] 1.2 Type-check passes
+- [x] 1.3 Build succeeds
+- [x] 1.4 DB tests still pass
 
 #### Manual
 

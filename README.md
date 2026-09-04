@@ -75,7 +75,9 @@ npx supabase db reset
 npm run dev
 ```
 
-The app is at `http://localhost:4321`, Supabase Studio at `http://localhost:54323`.
+The app is at `http://localhost:4321`, Supabase Studio at `http://localhost:54323`. `db reset`
+seeds a ready-to-use test account — sign in at `/auth/signin` with `test@example.com` /
+`password123`.
 
 ## Scripts
 

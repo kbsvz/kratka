@@ -1,8 +1,23 @@
 ---
 import Welcome from "@/components/Welcome.astro";
 import Layout from "@/layouts/Layout.astro";
+
+const { user } = Astro.locals;
+
+// FR-003: only unauthenticated visitors see the landing page. A top-level
+// `return` here crashes @typescript-eslint/no-misused-promises under
+// astro-eslint-parser (see [id].astro) — setting the response directly and
+// gating the template is the safe equivalent.
+if (user) {
+  Astro.response.status = 302;
+  Astro.response.headers.set("Location", "/dashboard");
+}
 ---
 
-<Layout>
-  <Welcome />
-</Layout>
+{
+  !user && (
+    <Layout>
+      <Welcome />
+    </Layout>
+  )
+}

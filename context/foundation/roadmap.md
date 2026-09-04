@@ -3,7 +3,7 @@ project: "kratka"
 version: 1
 status: draft
 created: 2026-08-27
-updated: 2026-09-02
+updated: 2026-09-03
 prd_version: 2
 main_goal: speed
 top_blocker: capacity
@@ -42,7 +42,7 @@ Crafters designing original cross-stitch schemes currently improvise with spread
 | ID   | Change ID           | Outcome (user can …)                                                                                                                                                               | Prerequisites | PRD refs                                                                                                    | Status   |
 |------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|-------------------------------------------------------------------------------------------------------------|----------|
 | F-01 | patterns-schema-rls | (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible                          | —          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-011, FR-012, FR-013; Access Control                      | done |
-| S-01 | editor-draw-save    | create a pattern (set grid size), define a color palette, paint and erase cells with live per-color count, save it, and reopen any saved pattern to continue editing               | F-01 | FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-012, FR-014, FR-019 | planning |
+| S-01 | editor-draw-save    | create a pattern (set grid size), define a color palette, paint and erase cells with live per-color count, save it, and reopen any saved pattern to continue editing               | F-01 | FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-012, FR-014, FR-019 | in-progress |
 | S-02 | pattern-list-manage | see all their saved patterns (name, grid size, last updated) and delete a pattern to free a slot                                                                                   | F-01          | FR-003, FR-011, FR-013                                                                                      | proposed |
 | S-03 | color-print-view    | open a clean print view for a saved pattern showing the grid, per-color thread counts, and a total time estimate; print via the browser's native dialog with no app UI on the page | S-01 | FR-003, FR-015, FR-016, FR-017, FR-019                                          | proposed |
 
@@ -96,7 +96,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - What rendering approach (CSS grid, canvas, SVG) achieves < 100 ms paint feedback on a 100×100 grid in the target desktop browsers without excessive memory use? — Owner: team. Block: no (plannable; technical research belongs in `/10x-plan editor-draw-save`).
   - How does a user navigate to reopen a specific saved pattern before S-02's list exists? — Owner: team. Block: no (a direct route to a known pattern ID, e.g. `/editor/<id>`, is sufficient to verify FR-012 for this slice; building any pattern list/picker UI is explicitly out of scope here — that's S-02's job).
 - **Risk:** The largest slice by FR count, necessarily so — create, draw, and save are inseparable steps in one user workflow; none is independently useful. The main execution risk is grid rendering performance on large grids; this must be prototyped early within the change, not left for the end.
-- **Status:** planning
+- **Status:** in-progress
 
 ### S-02: Pattern list and slot management
 
