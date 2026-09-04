@@ -3,7 +3,7 @@ change_id: editor-draw-save
 title: "Grid editor: create pattern, paint palette, live count, save, reopen"
 status: implementing
 created: 2026-08-31
-updated: 2026-09-03
+updated: 2026-09-04
 archived_at: null
 roadmap_ref: S-01
 prd_refs:

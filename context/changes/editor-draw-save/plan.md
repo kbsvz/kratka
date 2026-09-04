@@ -480,21 +480,21 @@ supports everything this plan needs.
 
 #### Automated
 
-- [x] 1.1 Lint passes
-- [x] 1.2 Type-check passes
-- [x] 1.3 Build succeeds
-- [x] 1.4 DB tests still pass
+- [x] 1.1 Lint passes — 23cd3b6
+- [x] 1.2 Type-check passes — 23cd3b6
+- [x] 1.3 Build succeeds — 23cd3b6
+- [x] 1.4 DB tests still pass — 23cd3b6
 
 #### Manual
 
-- [ ] 1.5 New Pattern entry enabled and reachable under the cap
-- [ ] 1.6 Boundary sizes (20×20, 100×100) create successfully
-- [ ] 1.7 Out-of-range dimensions rejected client-side
-- [ ] 1.8 Click-toggle + Save + reopen round-trip is exact
-- [ ] 1.9 Guardrail fires on both in-app nav and tab close
-- [ ] 1.10 4th-pattern creation blocked server-side with explanation
-- [ ] 1.11 Gridlines/edge numbers correct, including partial block
-- [ ] 1.12 Gridlines/text crisp on a high-DPI display
+- [x] 1.5 New Pattern entry enabled and reachable under the cap — 23cd3b6
+- [x] 1.6 Boundary sizes (20×20, 100×100) create successfully — 23cd3b6
+- [x] 1.7 Out-of-range dimensions rejected client-side — 23cd3b6
+- [x] 1.8 Click-toggle + Save + reopen round-trip is exact — 23cd3b6
+- [x] 1.9 Guardrail fires on both in-app nav and tab close — 23cd3b6
+- [x] 1.10 4th-pattern creation blocked server-side with explanation — 23cd3b6
+- [x] 1.11 Gridlines/edge numbers correct, including partial block — 23cd3b6
+- [x] 1.12 Gridlines/text crisp on a high-DPI display — 23cd3b6
 
 ### Phase 2: Full paint interaction
 

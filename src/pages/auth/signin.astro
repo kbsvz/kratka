@@ -13,7 +13,9 @@ const error = Astro.url.searchParams.get("error");
       <h1 class="mb-6 text-center text-2xl font-bold text-stone-800">Sign in</h1>
       <SignInForm serverError={error} client:load />
       <p class="mt-4 text-center text-sm text-stone-600">
-        Don't have an account? <a href="/auth/signup" class="text-[oklch(0.5485_0.1061_160.41)] hover:underline">Sign up</a>
+        Don't have an account? <a href="/auth/signup" class="text-[oklch(0.5485_0.1061_160.41)] hover:underline"
+          >Sign up</a
+        >
       </p>
     </div>
   </div>
