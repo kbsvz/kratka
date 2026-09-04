@@ -144,6 +144,16 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
         </Button>
       </div>
 
+      <div className="absolute top-4 right-4">
+        <Button
+          onClick={save}
+          disabled={!isDirty || isSaving}
+          className="bg-[oklch(0.5485_0.1061_160.41)] text-white hover:bg-[oklch(0.6085_0.1061_160.41)] disabled:opacity-40"
+        >
+          {isSaving ? "Saving…" : "Save"}
+        </Button>
+      </div>
+
       <h1 className="text-center text-2xl font-bold text-stone-800">{pattern.name}</h1>
 
       {saveError && <span className="text-sm text-red-700">{saveError}</span>}
@@ -151,14 +161,6 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
       <div className="w-fit overflow-auto rounded border border-stone-300">
         <canvas ref={canvasRef} onPointerDown={handlePointerDown} className="cursor-crosshair" />
       </div>
-
-      <Button
-        onClick={save}
-        disabled={!isDirty || isSaving}
-        className="bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-40"
-      >
-        {isSaving ? "Saving…" : "Save"}
-      </Button>
 
       <AlertDialog open={pendingConfirm}>
         <AlertDialogContent>
