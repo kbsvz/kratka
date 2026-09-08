@@ -27,7 +27,8 @@ relative last-updated time), most-recent first, each with a delete action behind
 confirmation prompt. Directly on the same page, under the 3-pattern cap, they see the
 width/height create form; submitting it creates the pattern and navigates straight to its
 grid editor, same as today's flow. At the cap, the form is replaced by the existing cap
-message. `/editor/new` no longer exists. Deleting a pattern removes it from the list
+message. The `/editor/new` page file is deleted (it now redirects to `/dashboard` via the
+editor's existing not-found handling, rather than 404ing). Deleting a pattern removes it from the list
 immediately and frees its slot — including revealing the create form again if they were
 previously at cap, without a page reload.
 

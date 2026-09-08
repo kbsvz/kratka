@@ -1,7 +1,7 @@
 ---
 change_id: pattern-list-manage
 title: "Pattern dashboard: list all patterns, delete a pattern"
-status: planned
+status: implementing
 created: 2026-09-08
 updated: 2026-09-08
 archived_at: null

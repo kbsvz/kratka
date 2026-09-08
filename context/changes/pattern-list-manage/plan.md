@@ -65,7 +65,10 @@ patterns (name, width×height, relative last-updated time, most-recently-updated
 — directly below or alongside it — either width/height inputs and a Create button (under
 cap) or the existing cap message (at cap). Submitting the create form creates the pattern
 and navigates straight to its grid editor, exactly as today's flow does, just starting from
-`/dashboard` instead of `/editor/new`. `/editor/new` no longer exists. Each list row has a
+`/dashboard` instead of `/editor/new`. The standalone `/editor/new` page file no longer
+exists — that path now falls through to `/editor/[id].astro`'s catch-all, which treats
+`"new"` as an unrecognized pattern id and redirects to `/dashboard`, same as any bad id (see
+Key Discoveries). Each list row has a
 delete action; confirming it removes the pattern immediately from the list and frees its
 slot server-side. The cap-boundary section (create form vs. cap message) reacts to the
 current in-browser pattern count, so deleting down from 3 patterns reveals the create form
@@ -75,7 +78,8 @@ Verify by: from zero patterns, using the on-dashboard form to create 3 patterns 
 time (confirming each submission navigates to that pattern's grid editor), confirming the
 cap message replaces the create form at 3, deleting one from the list, confirming the create
 form reappears without reload and the deleted pattern is gone from the list and no longer
-reachable at `/editor/<id>` (redirects to `/dashboard`), and confirming `/editor/new` 404s.
+reachable at `/editor/<id>` (redirects to `/dashboard`), and confirming `/editor/new` returns
+a genuine 404 (via `[id].astro`'s uuid-shape guard, change 5 below).
 
 ### Key Discoveries:
 
@@ -87,6 +91,16 @@ reachable at `/editor/<id>` (redirects to `/dashboard`), and confirming `/editor
   drive the cap-boundary decision, or a delete won't reveal the create form until the page
   reloads (see Critical Implementation Details below). Phase 1 relocates the form under this
   same boundary condition (server-computed, as today); Phase 2 makes it live.
+- `src/pages/editor/[id].astro` is a catch-all dynamic route — deleting `new.astro` alone
+  would NOT make `/editor/new` 404; it would still match `[id].astro` with `id = "new"` and
+  fall into the existing not-found branch, which 302-redirects to `/dashboard` (same as any
+  nonexistent pattern id). Since `/editor/new` should genuinely not exist, `[id].astro` gets
+  a small explicit fix (change 4 below): validate `id` looks like a uuid *before* querying,
+  and 404 outright when it doesn't. `"new"` was never a real pattern id, so this is a correctness
+  fix, not a special case — it also means the app stops spending a DB round-trip on
+  obviously-malformed ids. Genuine uuids that are simply unowned/nonexistent still redirect
+  to `/dashboard`, preserving FR-012's "not found and not owned look the same" property,
+  which only matters for values that could plausibly be a real id in the first place.
 
 ## What We're NOT Doing
 
@@ -95,7 +109,8 @@ reachable at `/editor/<id>` (redirects to `/dashboard`), and confirming `/editor
   archived S-01 impl-review floated switching this route to JSON+fetch as a possible
   follow-up; this plan explicitly does not take that up — it's a bigger contract change than
   this slice needs.)
-- No redirect stub left behind at `/editor/new` — it 404s like any other removed page.
+- No redirect stub for `/editor/new` — it 404s outright via `[id].astro`'s new uuid-shape
+  guard (change 4), not via a dedicated route or special-cased string check on `"new"`.
 - No new page route — the list and create form live on `/dashboard`, not a dedicated
   `/patterns` page.
 - No rename/edit-metadata UI — patterns keep their system-assigned names (PRD Non-Goals).
@@ -185,11 +200,27 @@ switching directives later).
 **File**: `src/pages/editor/new.astro` (deleted)
 
 **Intent**: Its markup relocated into `PatternDashboard` (change 3); the page itself is
-removed so `/editor/new` no longer resolves.
+removed.
 
 **Contract**: Delete the file. No redirect stub.
 
-#### 5. Retarget creation error redirects
+#### 5. Make `/editor/new` (and any other malformed id) genuinely 404
+
+**File**: `src/pages/editor/[id].astro`
+
+**Intent**: `[id].astro` is a catch-all — deleting `new.astro` alone leaves `/editor/new`
+resolving via this route with `id = "new"`, falling into the existing not-found branch,
+which redirects to `/dashboard`. `/editor/new` should not exist at all, so validate the id
+looks like a uuid before querying; anything else 404s immediately instead of hitting the
+database and redirecting.
+
+**Contract**: Add a `UUID_RE` check on `id`; when it fails, set `Astro.response.status = 404`
+instead of running the Supabase query. When it passes but the pattern is still not
+found/not owned, keep the existing 302-to-`/dashboard` behavior unchanged — this only
+narrows the *malformed-input* path, it doesn't touch the RLS-driven "not found and not
+owned look the same" contract for genuine ids.
+
+#### 6. Retarget creation error redirects
 
 **File**: `src/pages/api/patterns/index.ts`
 
@@ -201,7 +232,7 @@ unchanged.
 **Contract**: Replace the `/editor/new` prefix in all three `context.redirect(...)` calls
 with `/dashboard`. No other logic in this file changes.
 
-#### 6. Extend `dashboard.astro`
+#### 7. Extend `dashboard.astro`
 
 **File**: `src/pages/dashboard.astro`
 
@@ -235,7 +266,9 @@ block entirely — `PatternDashboard` now owns that decision.
       back on `/dashboard`, not a separate page
 - [ ] At the 3-pattern cap, the cap message renders instead of the create form, alongside the
       populated list
-- [ ] Visiting `/editor/new` directly returns a 404
+- [ ] Visiting `/editor/new` directly returns a 404 (via `[id].astro`'s uuid-shape guard)
+- [ ] Visiting any other malformed `/editor/<id>` (non-uuid) also 404s; a well-formed but
+      nonexistent/not-owned uuid still redirects to `/dashboard` (unchanged)
 - [ ] A second test account's patterns never appear (RLS regression check)
 - [ ] Table and form render correctly at standard and high-DPI display, matching the app's
       existing visual style
@@ -357,7 +390,9 @@ slice depends on; re-running it is a regression sanity check, not new coverage.
 4. Delete the remaining patterns down to zero; confirm the empty-state message replaces the
    table (create form still shown, since under cap).
 5. With the delete confirmation dialog open, click Cancel; confirm nothing changes.
-6. Visit `/editor/new` directly; confirm it 404s.
+6. Visit `/editor/new` directly; confirm it returns a 404. Visit `/editor/<a real pattern's
+   id>` after deleting that pattern (or one you don't own); confirm that still redirects to
+   `/dashboard`, not a 404.
 
 ## Performance Considerations
 
@@ -391,21 +426,22 @@ this plan needs.
 
 #### Automated
 
-- [ ] 1.1 Lint passes
-- [ ] 1.2 Type-check passes
-- [ ] 1.3 Build succeeds
+- [x] 1.1 Lint passes
+- [x] 1.2 Type-check passes
+- [x] 1.3 Build succeeds
 
 #### Manual
 
-- [ ] 1.4 Dashboard lists all live patterns with correct name, width×height, relative last-updated time
-- [ ] 1.5 List order is most-recently-updated first
-- [ ] 1.6 Zero patterns shows empty-state message, no table shell, and the on-dashboard create form
-- [ ] 1.7 Under cap, submitting the create form creates a pattern and navigates to its grid editor
-- [ ] 1.8 Invalid width/height shows the validation error back on /dashboard, not a separate page
-- [ ] 1.9 At the 3-pattern cap, cap message renders instead of the create form, alongside the populated list
-- [ ] 1.10 Visiting /editor/new returns a 404
-- [ ] 1.11 A second test account's patterns never appear
-- [ ] 1.12 Table and form render correctly at standard and high-DPI display
+- [x] 1.4 Dashboard lists all live patterns with correct name, width×height, relative last-updated time
+- [x] 1.5 List order is most-recently-updated first
+- [x] 1.6 Zero patterns shows empty-state message, no table shell, and the on-dashboard create form
+- [x] 1.7 Under cap, submitting the create form creates a pattern and navigates to its grid editor
+- [x] 1.8 Invalid width/height shows the validation error back on /dashboard, not a separate page
+- [x] 1.9 At the 3-pattern cap, cap message renders instead of the create form, alongside the populated list
+- [x] 1.10 Visiting /editor/new returns a 404
+- [x] 1.11 A malformed /editor/<id> 404s; a well-formed but nonexistent/not-owned id still redirects to /dashboard
+- [x] 1.12 A second test account's patterns never appear
+- [x] 1.13 Table and form render correctly at standard and high-DPI display
 
 ### Phase 2: Delete action (write path)
 
