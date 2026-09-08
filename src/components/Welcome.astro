@@ -1,10 +1,16 @@
 ---
 import Topbar from "@/components/Topbar.astro";
+
+interface Props {
+  isSignedIn?: boolean;
+}
+
+const { isSignedIn = false } = Astro.props;
 ---
 
 <div class="bg-cosmic min-h-screen w-full">
   <div class="p-4 sm:p-8">
-  <Topbar />
+    <Topbar />
 
     <!-- Feature cards -->
     <div class="mx-auto grid max-w-4xl grid-cols-1 gap-6 px-4 pb-24 sm:grid-cols-3">
@@ -20,14 +26,14 @@ import Topbar from "@/components/Topbar.astro";
           stroke-linecap="round"
           class="mb-4 text-[oklch(0.5485_0.1061_160.41)]"
         >
-          <path d="M2 2L10 10M10 2L2 10" />
-          <path d="M12 2L20 10M20 2L12 10" />
-          <path d="M22 2L30 10M30 2L22 10" />
+          <path d="M2 2L10 10M10 2L2 10"></path>
+          <path d="M12 2L20 10M20 2L12 10"></path>
+          <path d="M22 2L30 10M30 2L22 10"></path>
         </svg>
         <h3 class="mb-2 text-lg font-semibold text-stone-800">Easy To Use</h3>
         <p class="text-sm leading-relaxed text-stone-600">
-          Cross-stitch charts, mosaics, carpets, beadwork, pixel art — anything built cell by cell.
-          Pick your colours, paint the grid, print the result.
+          Cross-stitch charts, mosaics, carpets, beadwork, pixel art — anything built cell by cell. Pick your colours,
+          paint the grid, print the result.
         </p>
       </div>
 
@@ -43,9 +49,9 @@ import Topbar from "@/components/Topbar.astro";
           stroke-linecap="round"
           class="mb-4 text-[oklch(0.5485_0.1061_160.41)]"
         >
-          <path d="M2 2L10 10M10 2L2 10" />
-          <path d="M2 12L10 20M10 12L2 20" />
-          <path d="M2 22L10 30M10 22L2 30" />
+          <path d="M2 2L10 10M10 2L2 10"></path>
+          <path d="M2 12L10 20M10 12L2 20"></path>
+          <path d="M2 22L10 30M10 22L2 30"></path>
         </svg>
         <h3 class="mb-2 text-lg font-semibold text-stone-800">No Subscription To Start</h3>
         <p class="text-sm leading-relaxed text-stone-600">
@@ -65,14 +71,14 @@ import Topbar from "@/components/Topbar.astro";
           stroke-linecap="round"
           class="mb-4 text-[oklch(0.5485_0.1061_160.41)]"
         >
-          <path d="M2 2L10 10M10 2L2 10" />
-          <path d="M12 12L20 20M20 12L12 20" />
-          <path d="M22 22L30 30M30 22L22 30" />
+          <path d="M2 2L10 10M10 2L2 10"></path>
+          <path d="M12 12L20 20M20 12L12 20"></path>
+          <path d="M22 22L30 30M30 22L22 30"></path>
         </svg>
-        <h3 class="mb-2 text-lg font-semibold text-stone-800">A Little Extra If You Stitch. </h3>
+        <h3 class="mb-2 text-lg font-semibold text-stone-800">A Little Extra If You Stitch.</h3>
         <p class="text-sm leading-relaxed text-stone-600">
-          Cross-stitch charts get a bonus on the printout: how much thread each colour needs,
-          and how long the whole piece is likely to take.
+          Cross-stitch charts get a bonus on the printout: how much thread each colour needs, and how long the whole
+          piece is likely to take.
         </p>
       </div>
     </div>
@@ -80,20 +86,42 @@ import Topbar from "@/components/Topbar.astro";
     <!-- Hero section -->
     <div class="mx-auto flex max-w-4xl flex-col items-center justify-center px-4 py-3 text-center sm:py-4 lg:py-5">
       <div class="flex flex-col gap-4 sm:flex-row">
-        <a
-          href="/auth/signin"
-          class="inline-flex items-center justify-center rounded-lg bg-[oklch(0.5485_0.1061_160.41)] px-6 py-3 text-base font-medium text-white transition-colors hover:bg-[oklch(0.6085_0.1061_160.41)]"
-        >
-          Sign In
-        </a>
-        <a
-          href="/auth/signup"
-          class="inline-flex items-center justify-center rounded-lg border border-stone-300 px-6 py-3 text-base font-medium text-stone-800 transition-colors hover:bg-stone-100"
-        >
-          Sign Up
-        </a>
+        {
+          isSignedIn ? (
+            <>
+              <a
+                href="/dashboard"
+                class="inline-flex items-center justify-center rounded-lg bg-[oklch(0.5485_0.1061_160.41)] px-6 py-3 text-base font-medium text-white transition-colors hover:bg-[oklch(0.6085_0.1061_160.41)]"
+              >
+                Go to dashboard
+              </a>
+              <form method="POST" action="/api/auth/signout">
+                <button
+                  type="submit"
+                  class="inline-flex w-full items-center justify-center rounded-lg border border-stone-300 px-6 py-3 text-base font-medium text-stone-800 transition-colors hover:bg-stone-100"
+                >
+                  Sign out
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <a
+                href="/auth/signin"
+                class="inline-flex items-center justify-center rounded-lg bg-[oklch(0.5485_0.1061_160.41)] px-6 py-3 text-base font-medium text-white transition-colors hover:bg-[oklch(0.6085_0.1061_160.41)]"
+              >
+                Sign In
+              </a>
+              <a
+                href="/auth/signup"
+                class="inline-flex items-center justify-center rounded-lg border border-stone-300 px-6 py-3 text-base font-medium text-stone-800 transition-colors hover:bg-stone-100"
+              >
+                Sign Up
+              </a>
+            </>
+          )
+        }
       </div>
     </div>
-
   </div>
 </div>

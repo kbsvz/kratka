@@ -39,9 +39,12 @@ export const POST: APIRoute = async (context) => {
     .single();
 
   if (error) {
-    const message = error.message.includes("Pattern slot limit reached")
-      ? "You already have 3 patterns. Delete one to create another."
-      : error.message;
+    // KR001 is the patterns_before_insert trigger's 3-pattern-cap exception
+    // (migration 20260830140641, patterns_before_insert) — matching on the
+    // stable error code rather than the message text so a wording change to
+    // the trigger's RAISE EXCEPTION can't silently break cap detection.
+    const message =
+      error.code === "KR001" ? "You already have 3 patterns. Delete one to create another." : error.message;
     return context.redirect(`/editor/new?error=${encodeURIComponent(message)}`);
   }
 

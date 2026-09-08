@@ -196,6 +196,15 @@ Step-2 schemas, and rely on RLS for ownership scoping — `patterns_select`/
 the trigger's hint message, since FR-005 requires the limit to be enforced
 server-side with an explanation.
 
+**Addendum (impl-review, 2026-09-08)**: `index.ts` is a plain form-POST
+handler (per item 6's `editor/new.astro`), so on the cap exception it
+redirects to `/editor/new?error=...` with a fixed message instead of
+returning JSON — consistent with every other form-POST route in the repo
+(`signin.ts`, `signup.ts`). Cap detection checks `error.code === "KR001"`.
+`[id].ts`'s planned `GET` handler was removed as dead code: `editor/[id].astro`
+loads the pattern server-side via its own inline query for reopen (item 7)
+and nothing ever called the JSON `GET` route — only `PATCH` remains.
+
 #### 4. Protect editor routes
 
 **File**: `src/middleware.ts`
@@ -480,34 +489,34 @@ supports everything this plan needs.
 
 #### Automated
 
-- [x] 1.1 Lint passes
-- [x] 1.2 Type-check passes
-- [x] 1.3 Build succeeds
-- [x] 1.4 DB tests still pass
+- [x] 1.1 Lint passes — 23cd3b6
+- [x] 1.2 Type-check passes — 23cd3b6
+- [x] 1.3 Build succeeds — 23cd3b6
+- [x] 1.4 DB tests still pass — 23cd3b6
 
 #### Manual
 
-- [ ] 1.5 New Pattern entry enabled and reachable under the cap
-- [ ] 1.6 Boundary sizes (20×20, 100×100) create successfully
-- [ ] 1.7 Out-of-range dimensions rejected client-side
-- [ ] 1.8 Click-toggle + Save + reopen round-trip is exact
-- [ ] 1.9 Guardrail fires on both in-app nav and tab close
-- [ ] 1.10 4th-pattern creation blocked server-side with explanation
-- [ ] 1.11 Gridlines/edge numbers correct, including partial block
-- [ ] 1.12 Gridlines/text crisp on a high-DPI display
+- [x] 1.5 New Pattern entry enabled and reachable under the cap — 23cd3b6
+- [x] 1.6 Boundary sizes (20×20, 100×100) create successfully — 23cd3b6
+- [x] 1.7 Out-of-range dimensions rejected client-side — 23cd3b6
+- [x] 1.8 Click-toggle + Save + reopen round-trip is exact — 23cd3b6
+- [x] 1.9 Guardrail fires on both in-app nav and tab close — 23cd3b6
+- [x] 1.10 4th-pattern creation blocked server-side with explanation — 23cd3b6
+- [x] 1.11 Gridlines/edge numbers correct, including partial block — 23cd3b6
+- [x] 1.12 Gridlines/text crisp on a high-DPI display — 23cd3b6
 
 ### Phase 2: Full paint interaction
 
 #### Automated
 
-- [ ] 2.1 Lint, type-check, and build pass
-- [ ] 2.2 DB tests still pass
+- [x] 2.1 Lint, type-check, and build pass — 72d80d5
+- [x] 2.2 DB tests still pass — 72d80d5
 
 #### Manual
 
-- [ ] 2.3 Palette build (picker + hex) and 30-color cap enforced
-- [ ] 2.4 Fast drags leave no gaps, standard and high-DPI displays
-- [ ] 2.5 Live counts correct through rapid multi-color drag
-- [ ] 2.6 Erase restores cells to empty and decrements counts
-- [ ] 2.7 Save/reopen restores exact palette and grid
-- [ ] 2.8 DevTools profile under the 100ms budget, figure recorded
+- [x] 2.3 Palette build (picker only, no hex input — accepted MVP tradeoff, see change.md 2026-09-04) and 30-color cap enforced — 72d80d5
+- [x] 2.4 Fast drags leave no gaps, standard and high-DPI displays — 72d80d5
+- [x] 2.5 Live counts correct through rapid multi-color drag — 72d80d5
+- [x] 2.6 Erase restores cells to empty and decrements counts — 72d80d5
+- [x] 2.7 Save/reopen restores exact palette and grid — 72d80d5
+- [x] 2.8 DevTools profile under the 100ms budget, figure recorded — 72d80d5
