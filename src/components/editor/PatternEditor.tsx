@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
-import { usePatternGrid } from "@/components/hooks/usePatternGrid";
+import { usePatternGrid, lineCells, type GridCell } from "@/components/hooks/usePatternGrid";
 import { useUnsavedChangesGuard } from "@/components/hooks/useUnsavedChangesGuard";
 import { Button } from "@/components/ui/button";
+import PalettePanel from "@/components/editor/PalettePanel";
+import ColorCounts from "@/components/editor/ColorCounts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +23,23 @@ const EDGE_LABEL_SPACE = 24; // CSS px reserved for the edge-number gutter.
 export default function PatternEditor({ pattern }: { pattern: PatternEditorData }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasInitializedRef = useRef(false);
-  const { gridRef, paletteRef, isDirty, isSaving, saveError, toggleCell, save } = usePatternGrid(pattern);
+  const isPaintingRef = useRef(false);
+  const lastCellRef = useRef<GridCell | null>(null);
+  const {
+    gridRef,
+    palette,
+    tool,
+    counts,
+    atCap,
+    isDirty,
+    isSaving,
+    saveError,
+    addColor,
+    selectColor,
+    selectErase,
+    paintCells,
+    save,
+  } = usePatternGrid(pattern);
   const { attemptNavigate, pendingConfirm, confirmNavigate, cancelNavigate } = useUnsavedChangesGuard(isDirty);
 
   // Gutter on all four sides: the grid is translated in by EDGE_LABEL_SPACE
@@ -30,6 +48,56 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
   // boundary the way a single one-sided margin would.
   const cssWidth = pattern.width * CELL_SIZE + EDGE_LABEL_SPACE * 2;
   const cssHeight = pattern.height * CELL_SIZE + EDGE_LABEL_SPACE * 2;
+  const gridWidthPx = pattern.width * CELL_SIZE;
+  const gridHeightPx = pattern.height * CELL_SIZE;
+
+  const isHeavyCol = useCallback(
+    (col: number) => col % HEAVY_LINE_EVERY === 0 || col === pattern.width,
+    [pattern.width],
+  );
+  const isHeavyRow = useCallback(
+    (row: number) => row % HEAVY_LINE_EVERY === 0 || row === pattern.height,
+    [pattern.height],
+  );
+
+  const strokeCol = useCallback(
+    (ctx: CanvasRenderingContext2D, col: number) => {
+      const heavy = isHeavyCol(col);
+      // Opaque, not alpha-blended: drawCell() restrokes whole lines every
+      // time a cell along them is painted, and a semi-transparent stroke
+      // would compound darker with every overdraw (visible as lines
+      // getting "bolder" the more you paint). Opaque colors make every
+      // redraw idempotent regardless of how many times it happens.
+      ctx.strokeStyle = heavy ? "#777777" : "#dddddd";
+      // Odd widths (1px) need a half-pixel center to land crisply on the
+      // pixel grid; even widths (2px) need a whole-pixel center instead.
+      // Getting this wrong leaves the line at a fractional pixel offset,
+      // forcing anti-aliasing — its edge pixels then blend with whatever's
+      // behind them, so the same line reads bolder next to a saturated
+      // fill and thinner next to white.
+      ctx.lineWidth = heavy ? 2 : 1;
+      const x = heavy ? Math.round(col * CELL_SIZE) : Math.round(col * CELL_SIZE) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, gridHeightPx);
+      ctx.stroke();
+    },
+    [isHeavyCol, gridHeightPx],
+  );
+
+  const strokeRow = useCallback(
+    (ctx: CanvasRenderingContext2D, row: number) => {
+      const heavy = isHeavyRow(row);
+      ctx.strokeStyle = heavy ? "#777777" : "#dddddd";
+      ctx.lineWidth = heavy ? 2 : 1;
+      const y = heavy ? Math.round(row * CELL_SIZE) : Math.round(row * CELL_SIZE) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(gridWidthPx, y);
+      ctx.stroke();
+    },
+    [isHeavyRow, gridWidthPx],
+  );
 
   const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -48,33 +116,13 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
       for (let col = 0; col < pattern.width; col++) {
         const value = gridRef.current[row * pattern.width + col];
         if (value === 0) continue;
-        ctx.fillStyle = paletteRef.current[value - 1] ?? "#000000";
+        ctx.fillStyle = palette[value - 1] ?? "#000000";
         ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
     }
 
-    const gridWidthPx = pattern.width * CELL_SIZE;
-    const gridHeightPx = pattern.height * CELL_SIZE;
-    for (let col = 0; col <= pattern.width; col++) {
-      const heavy = col % HEAVY_LINE_EVERY === 0 || col === pattern.width;
-      ctx.strokeStyle = heavy ? "#00000088" : "#00000022";
-      ctx.lineWidth = heavy ? 1.5 : 1;
-      const x = Math.round(col * CELL_SIZE) + 0.5;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, gridHeightPx);
-      ctx.stroke();
-    }
-    for (let row = 0; row <= pattern.height; row++) {
-      const heavy = row % HEAVY_LINE_EVERY === 0 || row === pattern.height;
-      ctx.strokeStyle = heavy ? "#00000088" : "#00000022";
-      ctx.lineWidth = heavy ? 1.5 : 1;
-      const y = Math.round(row * CELL_SIZE) + 0.5;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(gridWidthPx, y);
-      ctx.stroke();
-    }
+    for (let col = 0; col <= pattern.width; col++) strokeCol(ctx, col);
+    for (let row = 0; row <= pattern.height; row++) strokeRow(ctx, row);
     ctx.restore();
 
     ctx.fillStyle = "#000000cc";
@@ -87,7 +135,29 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
     for (let row = HEAVY_LINE_EVERY; row <= pattern.height; row += HEAVY_LINE_EVERY) {
       ctx.fillText(String(row), EDGE_LABEL_SPACE / 2, EDGE_LABEL_SPACE + row * CELL_SIZE);
     }
-  }, [pattern.width, pattern.height, gridRef, paletteRef, cssWidth, cssHeight]);
+  }, [pattern.width, pattern.height, gridRef, palette, cssWidth, cssHeight, strokeCol, strokeRow]);
+
+  // Incremental redraw for a single painted cell: fills just that cell, then
+  // redraws its four bordering gridlines so the fill doesn't clip them. Used
+  // on every paint/erase so a drag never triggers a full-grid repaint (see
+  // plan.md's Performance constraints).
+  const drawCell = useCallback(
+    (row: number, col: number) => {
+      const ctx = canvasRef.current?.getContext("2d");
+      if (!ctx) return;
+      const value = gridRef.current[row * pattern.width + col];
+      ctx.save();
+      ctx.translate(EDGE_LABEL_SPACE, EDGE_LABEL_SPACE);
+      ctx.fillStyle = value === 0 ? "#ffffff" : (palette[value - 1] ?? "#000000");
+      ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      strokeCol(ctx, col);
+      strokeCol(ctx, col + 1);
+      strokeRow(ctx, row);
+      strokeRow(ctx, row + 1);
+      ctx.restore();
+    },
+    [gridRef, pattern.width, palette, strokeCol, strokeRow],
+  );
 
   useEffect(() => {
     // React 19 StrictMode double-invokes this effect in dev; sizing/scaling
@@ -108,21 +178,52 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
     draw();
   }, [draw, cssWidth, cssHeight]);
 
+  const cellFromPoint = useCallback((clientX: number, clientY: number): GridCell | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left - EDGE_LABEL_SPACE;
+    const y = clientY - rect.top - EDGE_LABEL_SPACE;
+    return { col: Math.floor(x / CELL_SIZE), row: Math.floor(y / CELL_SIZE) };
+  }, []);
+
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left - EDGE_LABEL_SPACE;
-      const y = event.clientY - rect.top - EDGE_LABEL_SPACE;
-      const col = Math.floor(x / CELL_SIZE);
-      const row = Math.floor(y / CELL_SIZE);
-      if (col < 0 || col >= pattern.width || row < 0 || row >= pattern.height) return;
-      toggleCell(row, col);
-      draw();
+      const cell = cellFromPoint(event.clientX, event.clientY);
+      if (!cell) return;
+      canvasRef.current?.setPointerCapture(event.pointerId);
+      isPaintingRef.current = true;
+      lastCellRef.current = cell;
+      paintCells([cell], drawCell);
     },
-    [toggleCell, draw, pattern.width, pattern.height],
+    [cellFromPoint, paintCells, drawCell],
   );
+
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLCanvasElement>) => {
+      if (!isPaintingRef.current || !lastCellRef.current) return;
+      const nativeEvent = event.nativeEvent;
+      const coalesced = nativeEvent.getCoalescedEvents();
+      const points = coalesced.length > 0 ? coalesced : [nativeEvent];
+
+      for (const point of points) {
+        const cell = cellFromPoint(point.clientX, point.clientY);
+        if (!cell) continue;
+        paintCells(lineCells(lastCellRef.current, cell), drawCell);
+        lastCellRef.current = cell;
+      }
+    },
+    [cellFromPoint, paintCells, drawCell],
+  );
+
+  const stopPainting = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
+    isPaintingRef.current = false;
+    lastCellRef.current = null;
+    const canvas = canvasRef.current;
+    if (canvas?.hasPointerCapture(event.pointerId)) {
+      canvas.releasePointerCapture(event.pointerId);
+    }
+  }, []);
 
   return (
     <div className="bg-cosmic relative flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-stone-800">
@@ -133,6 +234,19 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
         e.g. variant="outline"'s default bg-background/inherited color.
       */}
       <div className="absolute top-4 left-4">
+        <a
+          href="/?home"
+          onClick={(event) => {
+            event.preventDefault();
+            attemptNavigate(() => (window.location.href = "/?home"));
+          }}
+          className="text-xl font-bold text-stone-800 hover:opacity-80"
+        >
+          KRATKA
+        </a>
+      </div>
+
+      <div className="absolute top-4 right-4 flex items-center gap-2">
         <Button
           variant="outline"
           onClick={() => {
@@ -142,9 +256,6 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
         >
           Back to dashboard
         </Button>
-      </div>
-
-      <div className="absolute top-4 right-4">
         <Button
           onClick={save}
           disabled={!isDirty || isSaving}
@@ -158,8 +269,27 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
 
       {saveError && <span className="text-sm text-red-700">{saveError}</span>}
 
+      <div className="flex w-full max-w-3xl flex-nowrap justify-center gap-12">
+        <PalettePanel
+          palette={palette}
+          tool={tool}
+          atCap={atCap}
+          onAddColor={addColor}
+          onSelectColor={selectColor}
+          onSelectErase={selectErase}
+        />
+        <ColorCounts palette={palette} counts={counts} />
+      </div>
+
       <div className="w-fit overflow-auto rounded border border-stone-300">
-        <canvas ref={canvasRef} onPointerDown={handlePointerDown} className="cursor-crosshair" />
+        <canvas
+          ref={canvasRef}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={stopPainting}
+          onPointerCancel={stopPainting}
+          className="cursor-crosshair touch-none"
+        />
       </div>
 
       <AlertDialog open={pendingConfirm}>

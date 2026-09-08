@@ -4,20 +4,24 @@ import Layout from "@/layouts/Layout.astro";
 
 const { user } = Astro.locals;
 
-// FR-003: only unauthenticated visitors see the landing page. A top-level
-// `return` here crashes @typescript-eslint/no-misused-promises under
+// FR-003: only unauthenticated visitors see the landing page on a plain `/`
+// visit. The `?home` flag is an explicit exception for the KRATKA logo:
+// clicking it should always show the actual landing page, even when signed
+// in, rather than bouncing straight to the dashboard. A top-level `return`
+// here crashes @typescript-eslint/no-misused-promises under
 // astro-eslint-parser (see [id].astro) — setting the response directly and
 // gating the template is the safe equivalent.
-if (user) {
+const showLanding = !user || Astro.url.searchParams.has("home");
+if (!showLanding) {
   Astro.response.status = 302;
   Astro.response.headers.set("Location", "/dashboard");
 }
 ---
 
 {
-  !user && (
+  showLanding && (
     <Layout>
-      <Welcome />
+      <Welcome isSignedIn={!!user} />
     </Layout>
   )
 }

@@ -59,3 +59,14 @@ print view (S-03).
   decision (2026-09-04), clean up by deleting the `smoketest@example.com`
   auth user (cascades to its patterns) before this project has real users.
   Restarting `npm run dev` is required to pick up the corrected `.dev.vars`.
+
+- **2026-09-04 — future improvement: replace the native color picker.**
+  `PalettePanel.tsx`'s "+" swatch opens the browser/OS-native `<input
+  type="color">` dialog, which can't be customized (no injectable Save/Cancel
+  buttons, and close behavior varies by browser — Chromium closes on
+  click-outside with no explicit OK, Firefox/Safari delegate to the OS color
+  panel). The app-level checkmark/× confirm-discard pair around the pending
+  swatch was added specifically to compensate for that missing affordance.
+  Accepted as-is for MVP (2026-09-04 user decision). A custom in-app color
+  picker (spectrum/wheel + hex entry, fully within our own UI) would remove
+  this inconsistency and is worth considering for a future slice.
