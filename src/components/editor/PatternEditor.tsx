@@ -203,7 +203,15 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
     (event: React.PointerEvent<HTMLCanvasElement>) => {
       if (!isPaintingRef.current || !lastCellRef.current) return;
       const nativeEvent = event.nativeEvent;
-      const coalesced = nativeEvent.getCoalescedEvents();
+      // TS's DOM lib types this as always present, but real-world support
+      // varies — catch rather than let an unsupported runtime throw here
+      // and silently kill painting for the rest of the session.
+      let coalesced: PointerEvent[];
+      try {
+        coalesced = nativeEvent.getCoalescedEvents();
+      } catch {
+        coalesced = [];
+      }
       const points = coalesced.length > 0 ? coalesced : [nativeEvent];
 
       for (const point of points) {

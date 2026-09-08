@@ -196,6 +196,15 @@ Step-2 schemas, and rely on RLS for ownership scoping — `patterns_select`/
 the trigger's hint message, since FR-005 requires the limit to be enforced
 server-side with an explanation.
 
+**Addendum (impl-review, 2026-09-08)**: `index.ts` is a plain form-POST
+handler (per item 6's `editor/new.astro`), so on the cap exception it
+redirects to `/editor/new?error=...` with a fixed message instead of
+returning JSON — consistent with every other form-POST route in the repo
+(`signin.ts`, `signup.ts`). Cap detection checks `error.code === "KR001"`.
+`[id].ts`'s planned `GET` handler was removed as dead code: `editor/[id].astro`
+loads the pattern server-side via its own inline query for reopen (item 7)
+and nothing ever called the JSON `GET` route — only `PATCH` remains.
+
 #### 4. Protect editor routes
 
 **File**: `src/middleware.ts`
@@ -505,7 +514,7 @@ supports everything this plan needs.
 
 #### Manual
 
-- [x] 2.3 Palette build (picker + hex) and 30-color cap enforced — 72d80d5
+- [x] 2.3 Palette build (picker only, no hex input — accepted MVP tradeoff, see change.md 2026-09-04) and 30-color cap enforced — 72d80d5
 - [x] 2.4 Fast drags leave no gaps, standard and high-DPI displays — 72d80d5
 - [x] 2.5 Live counts correct through rapid multi-color drag — 72d80d5
 - [x] 2.6 Erase restores cells to empty and decrements counts — 72d80d5

@@ -153,6 +153,15 @@ export function usePatternGrid(pattern: PatternEditorData) {
           grid: Array.from(gridRef.current),
         }),
       });
+      if (response.status === 401) {
+        // Distinct from the generic network-error message below: an expired
+        // session looks nothing like a connectivity blip, and the whole
+        // point of the unsaved-changes guardrail is protecting this paint
+        // work — a user who trusts "check your connection" here could give
+        // up and navigate away instead of re-authenticating.
+        setSaveError("Your session expired. Sign in again to save this pattern.");
+        return;
+      }
       if (!response.ok) {
         throw new Error("Save failed");
       }
