@@ -17,13 +17,13 @@ craft-specific flourish, and there's room for more.
 
 ## Status
 
-Early. Auth and the data layer are in place; the editor itself is not built yet.
+Early. Auth, the data layer, and the core editor are in place; pattern list management and the printable chart view are not built yet.
 
 | Area                                               | State       |
 | -------------------------------------------------- | ----------- |
 | Email/password auth, route protection              | working     |
 | `patterns` schema, RLS, 3-pattern cap, soft delete | working     |
-| Grid editor — draw, palette, save, reopen          | not started |
+| Grid editor — draw, palette, save, reopen          | working (pending archive) |
 | Pattern list and delete                            | not started |
 | Printable chart view                               | not started |
 

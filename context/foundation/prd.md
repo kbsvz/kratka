@@ -232,3 +232,9 @@ No blocking open questions at this time. The shaping session resolved every gray
 surfaced (recorded in `shape-notes.md`), and the quality cross-check found no gaps. Forward-
 looking items (paid-tier mechanics, post-MVP editor capabilities) are captured as Non-Goals,
 not open questions.
+
+- **FR-007 shipped as picker-only, no hex input.** The `editor-draw-save` implementation
+  (`S-01`) ships palette color selection via color picker only; hex text-entry was dropped as
+  an accepted MVP tradeoff (recorded 2026-09-04 in
+  `context/changes/editor-draw-save/change.md`). FR-007's wording above still describes both
+  input methods — treat "hex input" there as deferred, not delivered, until revisited.
