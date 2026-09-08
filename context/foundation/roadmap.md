@@ -125,12 +125,12 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID           | Suggested issue title                                                 | Ready for `/10x-plan` | Notes                                                              |
-|------------|---------------------|-----------------------------------------------------------------------|-----------------------|--------------------------------------------------------------------|
-| F-01       | patterns-schema-rls | Supabase migration: patterns + pattern_names tables, owner-scoped RLS | no                    | Plan written: `context/changes/patterns-schema-rls/plan.md`. Run `/10x-implement patterns-schema-rls phase 1`. |
-| S-01       | editor-draw-save    | Grid editor: create pattern, paint palette, live count, save, reopen  | no                    | Awaits F-01. Prototype grid rendering performance early within the change. |
-| S-02       | pattern-list-manage | Pattern dashboard: list all patterns, delete a pattern                | no                    | Awaits F-01. Parallel with S-01 — can run as a separate agent task. |
-| S-03       | color-print-view    | Print view: color grid, thread-count legend, time estimate, print CSS | no                    | Awaits S-01. Parallel with S-02 once S-01 is done.                 |
+| Roadmap ID | Change ID           | Suggested issue title                                                 | Ready for `/10x-plan` | Notes                                                                                        |
+|------------|---------------------|-----------------------------------------------------------------------|-----------------------|----------------------------------------------------------------------------------------------|
+| F-01       | patterns-schema-rls | Supabase migration: patterns + pattern_names tables, owner-scoped RLS | done                  | Done — archived to `context/archive/2026-08-30-patterns-schema-rls/`. See `## Done`.         |
+| S-01       | editor-draw-save    | Grid editor: create pattern, paint palette, live count, save, reopen  | done                  | Implementation complete (`change.md` status: `impl_reviewed`; both plan phases checked off). |
+| S-02       | pattern-list-manage | Pattern dashboard: list all patterns, delete a pattern                | yes                   | F-01 done — ready to plan. Parallel with closing out S-01.                                   |
+| S-03       | color-print-view    | Print view: color grid, thread-count legend, time estimate, print CSS | no                    | Ready to plan. Parallel with S-02 once S-01 is done.                                         |
 
 ## Open Roadmap Questions
 
