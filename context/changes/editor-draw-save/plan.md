@@ -500,14 +500,14 @@ supports everything this plan needs.
 
 #### Automated
 
-- [x] 2.1 Lint, type-check, and build pass
-- [x] 2.2 DB tests still pass
+- [x] 2.1 Lint, type-check, and build pass — 72d80d5
+- [x] 2.2 DB tests still pass — 72d80d5
 
 #### Manual
 
-- [x] 2.3 Palette build (picker + hex) and 30-color cap enforced
-- [x] 2.4 Fast drags leave no gaps, standard and high-DPI displays
-- [x] 2.5 Live counts correct through rapid multi-color drag
-- [x] 2.6 Erase restores cells to empty and decrements counts
-- [x] 2.7 Save/reopen restores exact palette and grid
-- [x] 2.8 DevTools profile under the 100ms budget, figure recorded
+- [x] 2.3 Palette build (picker + hex) and 30-color cap enforced — 72d80d5
+- [x] 2.4 Fast drags leave no gaps, standard and high-DPI displays — 72d80d5
+- [x] 2.5 Live counts correct through rapid multi-color drag — 72d80d5
+- [x] 2.6 Erase restores cells to empty and decrements counts — 72d80d5
+- [x] 2.7 Save/reopen restores exact palette and grid — 72d80d5
+- [x] 2.8 DevTools profile under the 100ms budget, figure recorded — 72d80d5
