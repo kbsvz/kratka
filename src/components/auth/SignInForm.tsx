@@ -79,9 +79,7 @@ export default function SignInForm({ serverError }: Props) {
 
       <ServerError message={serverError} />
 
-      <SubmitButton pendingText="Signing in..." icon={<LogIn className="size-4" />}>
-        Sign in
-      </SubmitButton>
+      <SubmitButton icon={<LogIn className="size-4" />}>Sign in</SubmitButton>
     </form>
   );
 }
