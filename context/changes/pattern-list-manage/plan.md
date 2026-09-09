@@ -426,36 +426,36 @@ this plan needs.
 
 #### Automated
 
-- [x] 1.1 Lint passes
-- [x] 1.2 Type-check passes
-- [x] 1.3 Build succeeds
+- [x] 1.1 Lint passes — 24483a1
+- [x] 1.2 Type-check passes — 24483a1
+- [x] 1.3 Build succeeds — 24483a1
 
 #### Manual
 
-- [x] 1.4 Dashboard lists all live patterns with correct name, width×height, relative last-updated time
-- [x] 1.5 List order is most-recently-updated first
-- [x] 1.6 Zero patterns shows empty-state message, no table shell, and the on-dashboard create form
-- [x] 1.7 Under cap, submitting the create form creates a pattern and navigates to its grid editor
-- [x] 1.8 Invalid width/height shows the validation error back on /dashboard, not a separate page
-- [x] 1.9 At the 3-pattern cap, cap message renders instead of the create form, alongside the populated list
-- [x] 1.10 Visiting /editor/new returns a 404
-- [x] 1.11 A malformed /editor/<id> 404s; a well-formed but nonexistent/not-owned id still redirects to /dashboard
-- [x] 1.12 A second test account's patterns never appear
-- [x] 1.13 Table and form render correctly at standard and high-DPI display
+- [x] 1.4 Dashboard lists all live patterns with correct name, width×height, relative last-updated time — 24483a1
+- [x] 1.5 List order is most-recently-updated first — 24483a1
+- [x] 1.6 Zero patterns shows empty-state message, no table shell, and the on-dashboard create form — 24483a1
+- [x] 1.7 Under cap, submitting the create form creates a pattern and navigates to its grid editor — 24483a1
+- [x] 1.8 Invalid width/height shows the validation error back on /dashboard, not a separate page — 24483a1
+- [x] 1.9 At the 3-pattern cap, cap message renders instead of the create form, alongside the populated list — 24483a1
+- [x] 1.10 Visiting /editor/new returns a 404 — 24483a1
+- [x] 1.11 A malformed /editor/<id> 404s; a well-formed but nonexistent/not-owned id still redirects to /dashboard — 24483a1
+- [x] 1.12 A second test account's patterns never appear — 24483a1
+- [x] 1.13 Table and form render correctly at standard and high-DPI display — 24483a1
 
 ### Phase 2: Delete action (write path)
 
 #### Automated
 
-- [ ] 2.1 Lint passes
-- [ ] 2.2 Type-check passes
-- [ ] 2.3 Build succeeds
+- [x] 2.1 Lint passes
+- [x] 2.2 Type-check passes
+- [x] 2.3 Build succeeds
 
 #### Manual
 
-- [ ] 2.4 Deleting a pattern removes it immediately and its editor route redirects to /dashboard
-- [ ] 2.5 Confirmation dialog shows before delete; Cancel leaves the pattern untouched
-- [ ] 2.6 Deleting down from the cap reveals the create form without a page reload
-- [ ] 2.7 Expired-session delete shows session-expired message and restores the row
-- [ ] 2.8 Double-delete (already-gone pattern) shows no error
-- [ ] 2.9 Network failure during delete restores the row and shows the generic error message
+- [x] 2.4 Deleting a pattern removes it immediately and its editor route redirects to /dashboard
+- [x] 2.5 Confirmation dialog shows before delete; Cancel leaves the pattern untouched
+- [x] 2.6 Deleting down from the cap reveals the create form without a page reload
+- [x] 2.7 Expired-session delete shows session-expired message and restores the row
+- [x] 2.8 Double-delete (already-gone pattern) shows no error
+- [x] 2.9 Network failure during delete restores the row and shows the generic error message

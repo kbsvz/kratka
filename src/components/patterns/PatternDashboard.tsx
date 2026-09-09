@@ -2,6 +2,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { usePatternList } from "@/components/hooks/usePatternList";
 import { formatRelativeTime } from "@/lib/utils";
 import type { PatternListItem } from "@/types";
 
@@ -14,9 +25,9 @@ const CAP = 3;
 /**
  * Owns everything dashboard.astro renders below the welcome/sign-out block:
  * the pattern table and the cap-boundary section (create form vs. cap
- * message). The cap boundary is decided from `initialPatterns.length` in this
- * phase; a later phase swaps that for live client state so it reacts to
- * deletes without a reload (see plan.md's Critical Implementation Details).
+ * message). The cap boundary is driven by the live `patterns` list from
+ * `usePatternList`, so a delete immediately un-hides the create form without
+ * a page reload (see plan.md's Critical Implementation Details).
  */
 export default function PatternDashboard({
   initialPatterns,
@@ -25,7 +36,9 @@ export default function PatternDashboard({
   initialPatterns: PatternListItem[];
   createError?: string;
 }) {
-  const atCap = initialPatterns.length >= CAP;
+  const { patterns, pendingDeleteId, deleteError, sessionExpired, requestDelete, confirmDelete, cancelDelete } =
+    usePatternList(initialPatterns);
+  const atCap = patterns.length >= CAP;
 
   return (
     <div className="mt-6 w-full text-left">
@@ -85,7 +98,7 @@ export default function PatternDashboard({
       )}
 
       <h2 className="mb-2 text-lg font-semibold text-stone-800">My Patterns</h2>
-      {initialPatterns.length === 0 ? (
+      {patterns.length === 0 ? (
         <p className="text-sm text-stone-500">No patterns yet — create your first one above.</p>
       ) : (
         <Table>
@@ -98,7 +111,7 @@ export default function PatternDashboard({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {initialPatterns.map((pattern) => (
+            {patterns.map((pattern) => (
               <TableRow key={pattern.id}>
                 <TableCell>
                   <a href={`/editor/${pattern.id}`} className="text-[oklch(0.5485_0.1061_160.41)] hover:underline">
@@ -109,12 +122,47 @@ export default function PatternDashboard({
                   {pattern.width}×{pattern.height}
                 </TableCell>
                 <TableCell>{formatRelativeTime(pattern.updated_at)}</TableCell>
-                <TableCell />
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      requestDelete(pattern.id);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       )}
+      {deleteError && (
+        <div className="mt-2 flex items-center gap-3">
+          <p className="text-sm text-red-700">{deleteError}</p>
+          {sessionExpired && (
+            <Button asChild variant="outline" size="sm">
+              <a href="/auth/signin">Sign in</a>
+            </Button>
+          )}
+        </div>
+      )}
+
+      <AlertDialog open={pendingDeleteId !== null}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this pattern?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This frees up a slot, but the pattern won&apos;t be reachable or reopenable afterward.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
