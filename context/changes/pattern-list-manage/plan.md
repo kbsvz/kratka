@@ -342,6 +342,26 @@ choice must react to live client state, not just the initial prop's length.
 hook's live `patterns.length >= 3`. No markup restructuring — Phase 1 already built both
 branches; only the data source driving which one renders changes.
 
+#### 5. Addendum: session-expiry UX (sign in, sign out, disabled deletes)
+
+**File**: `src/components/hooks/usePatternList.ts`, `src/components/patterns/PatternDashboard.tsx`, `src/pages/dashboard.astro`
+
+**Intent**: Added during and after manual verification of Phase 2 (not in the original plan
+text) — the 401/session-expired `deleteError` message initially had no actionable next step,
+and the page kept presenting UI that assumed a live session. Three follow-up refinements
+close that gap: a "Sign in" link next to the error; hiding "Sign out" once the session is
+already gone (showing it was misleading); disabling every row's Delete button so the user
+can't retry an action that will just 401 again.
+
+**Contract**: `usePatternList` gained a `sessionExpired` boolean, set alongside `deleteError`
+in the `401` branch of `confirmDelete` and reset at the start of each new delete attempt.
+`PatternDashboard` renders a `<Button asChild>` wrapping `<a href="/auth/signin">Sign in</a>`
+next to `deleteError` when `sessionExpired` is true; renders the "Sign out" form (moved here
+from `dashboard.astro`, same `POST /api/auth/signout` target) only `{!sessionExpired && ...}`;
+and sets `disabled={sessionExpired}` on each row's Delete button. `usePatternList` also
+gained an `inFlightIdRef` guard in `confirmDelete` (cleared in a `finally` block) so a rapid
+double-click can't send two `DELETE` requests for the same id.
+
 ### Success Criteria:
 
 #### Automated Verification:

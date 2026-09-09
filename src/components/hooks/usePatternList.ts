@@ -1,17 +1,18 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { PatternListItem } from "@/types";
 
 /**
  * Owns the client-side pattern list and the delete confirmation flow.
  *
- * Mirrors `useUnsavedChangesGuard`'s attempt→pending→confirm/cancel naming
- * and `usePatternGrid.save()`'s 401-handling idiom (FR-013).
+ * Mirrors `useUnsavedChangesGuard`'s request→pending→confirm/cancel
+ * state-machine shape and `usePatternGrid.save()`'s 401-handling idiom (FR-013).
  */
 export function usePatternList(initialPatterns: PatternListItem[]) {
   const [patterns, setPatterns] = useState<PatternListItem[]>(initialPatterns);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const inFlightIdRef = useRef<string | null>(null);
 
   const requestDelete = useCallback((id: string) => {
     setPendingDeleteId(id);
@@ -23,7 +24,8 @@ export function usePatternList(initialPatterns: PatternListItem[]) {
 
   const confirmDelete = useCallback(async () => {
     const id = pendingDeleteId;
-    if (!id) return;
+    if (!id || inFlightIdRef.current === id) return;
+    inFlightIdRef.current = id;
     setPendingDeleteId(null);
     setDeleteError(null);
     setSessionExpired(false);
@@ -60,6 +62,8 @@ export function usePatternList(initialPatterns: PatternListItem[]) {
     } catch {
       rollback();
       setDeleteError("Couldn't delete. Check your connection and try again.");
+    } finally {
+      inFlightIdRef.current = null;
     }
   }, [pendingDeleteId, patterns]);
 

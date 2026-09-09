@@ -33,14 +33,6 @@ const createError = Astro.url.searchParams.get("error") ?? undefined;
         Welcome, <span class="font-semibold text-stone-800">{user?.email}</span>
       </p>
       <PatternDashboard client:load initialPatterns={patterns} createError={createError} />
-      <form method="POST" action="/api/auth/signout" class="mt-6">
-        <button
-          type="submit"
-          class="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm transition-colors hover:bg-stone-100"
-        >
-          Sign out
-        </button>
-      </form>
     </div>
   </div>
 </Layout>

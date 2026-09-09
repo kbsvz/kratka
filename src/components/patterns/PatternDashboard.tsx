@@ -23,11 +23,14 @@ const labelClass = "mb-1 text-stone-700";
 const CAP = 3;
 
 /**
- * Owns everything dashboard.astro renders below the welcome/sign-out block:
- * the pattern table and the cap-boundary section (create form vs. cap
- * message). The cap boundary is driven by the live `patterns` list from
- * `usePatternList`, so a delete immediately un-hides the create form without
- * a page reload (see plan.md's Critical Implementation Details).
+ * Owns everything dashboard.astro renders below the welcome block: the
+ * pattern table, the cap-boundary section (create form vs. cap message), and
+ * the sign-out button. The cap boundary is driven by the live `patterns`
+ * list from `usePatternList`, so a delete immediately un-hides the create
+ * form without a page reload (see plan.md's Critical Implementation
+ * Details). Sign-out lives here (not in dashboard.astro) so it can be hidden
+ * once `sessionExpired` is true — showing "Sign out" for a session that's
+ * already gone is misleading.
  */
 export default function PatternDashboard({
   initialPatterns,
@@ -126,6 +129,7 @@ export default function PatternDashboard({
                   <Button
                     variant="outline"
                     size="sm"
+                    disabled={sessionExpired}
                     onClick={() => {
                       requestDelete(pattern.id);
                     }}
@@ -147,6 +151,18 @@ export default function PatternDashboard({
             </Button>
           )}
         </div>
+      )}
+
+      {!sessionExpired && (
+        <form method="POST" action="/api/auth/signout" className="mt-6">
+          <Button
+            type="submit"
+            variant="outline"
+            className="border-stone-300 bg-white text-stone-800 hover:bg-stone-100"
+          >
+            Sign out
+          </Button>
+        </form>
       )}
 
       <AlertDialog open={pendingDeleteId !== null}>
