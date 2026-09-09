@@ -116,13 +116,13 @@ None — no schema/data changes, UI-only.
 
 #### Automated
 
-- [x] 1.1 Lint passes
-- [x] 1.2 Type-check passes
-- [x] 1.3 Build succeeds
+- [x] 1.1 Lint passes — 8841b2a
+- [x] 1.2 Type-check passes — 8841b2a
+- [x] 1.3 Build succeeds — 8841b2a
 
 #### Manual
 
-- [ ] 1.4 Each swatch shows its live count directly underneath it, updating as cells are painted/erased
-- [ ] 1.5 Erase button and add-color control stay vertically aligned with the swatch columns
-- [ ] 1.6 ~15 swatches fit per row before wrapping at the panel's width
-- [ ] 1.7 Palette cap behavior (30 colors, "Palette is full" message) is unchanged
+- [x] 1.4 Each swatch shows its live count directly underneath it, updating as cells are painted/erased — 8841b2a
+- [x] 1.5 Erase button and add-color control stay vertically aligned with the swatch columns — 8841b2a
+- [x] 1.6 ~15 swatches fit per row before wrapping at the panel's width — 8841b2a
+- [x] 1.7 Palette cap behavior (30 colors, "Palette is full" message) is unchanged — 8841b2a
