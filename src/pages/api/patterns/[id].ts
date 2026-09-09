@@ -50,3 +50,41 @@ export const PATCH: APIRoute = async (context) => {
 
   return new Response(null, { status: 204 });
 };
+
+export const DELETE: APIRoute = async (context) => {
+  const user = context.locals.user;
+  if (!user) {
+    return new Response(JSON.stringify({ error: "Not authenticated" }), { status: 401 });
+  }
+
+  const id = context.params.id;
+  if (!id) {
+    return new Response(JSON.stringify({ error: "Pattern not found" }), { status: 404 });
+  }
+
+  const supabase = createClient(context.request.headers, context.cookies);
+  if (!supabase) {
+    return new Response(JSON.stringify({ error: "Supabase is not configured" }), { status: 500 });
+  }
+
+  const { error } = await supabase.rpc("soft_delete_pattern", { p_id: id });
+
+  if (error) {
+    // KR002 (supabase/migrations/20260830140641_create_patterns_and_names.sql:308):
+    // not found, not owned, or already deleted — indistinguishable by design,
+    // same as PATCH's PGRST116 handling above.
+    if (error.code === "KR002") {
+      return new Response(JSON.stringify({ error: "Pattern not found" }), { status: 404 });
+    }
+    // KR003: the RPC's own auth check — defensive only, the route's own
+    // `!user` check above should always catch this first.
+    if (error.code === "KR003") {
+      return new Response(JSON.stringify({ error: "Not authenticated" }), { status: 401 });
+    }
+    // eslint-disable-next-line no-console -- intentional server-side log for an unexpected delete failure
+    console.error("Failed to delete pattern", { patternId: id, error });
+    return new Response(JSON.stringify({ error: "Delete failed" }), { status: 400 });
+  }
+
+  return new Response(null, { status: 204 });
+};

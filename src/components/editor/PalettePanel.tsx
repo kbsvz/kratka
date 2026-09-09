@@ -7,6 +7,7 @@ interface PalettePanelProps {
   palette: string[];
   tool: Tool;
   atCap: boolean;
+  counts: Map<number, number>;
   onAddColor: (hex: string) => boolean;
   onSelectColor: (index: number) => void;
   onSelectErase: () => void;
@@ -16,6 +17,7 @@ export default function PalettePanel({
   palette,
   tool,
   atCap,
+  counts,
   onAddColor,
   onSelectColor,
   onSelectErase,
@@ -38,7 +40,8 @@ export default function PalettePanel({
   };
 
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-stone-200 bg-white/70 p-4 text-stone-800">
+    // max-w-3xl fits ~15 swatch cells per row before wrapping.
+    <div className="w-full max-w-3xl rounded-2xl border border-stone-200 bg-white/70 p-4 text-stone-800">
       <input
         ref={colorInputRef}
         type="color"
@@ -50,36 +53,43 @@ export default function PalettePanel({
         className="sr-only"
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          aria-label="Erase"
-          onClick={onSelectErase}
-          className={cn(
-            "flex size-8 items-center justify-center rounded-full border-2 bg-white text-stone-600",
-            tool.type === "erase" ? "border-[oklch(0.5485_0.1061_160.41)]" : "border-stone-300",
-          )}
-        >
-          <Eraser className="size-4" />
-        </button>
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="flex flex-col items-center gap-1">
+          <button
+            type="button"
+            aria-label="Erase"
+            onClick={onSelectErase}
+            className={cn(
+              "flex size-8 items-center justify-center rounded-full border-2 bg-white text-stone-600",
+              tool.type === "erase" ? "border-[oklch(0.5485_0.1061_160.41)]" : "border-stone-300",
+            )}
+          >
+            <Eraser className="size-4" />
+          </button>
+          <span aria-hidden="true" className="invisible text-xs tabular-nums">
+            0
+          </span>
+        </div>
 
         {palette.map((hex, i) => {
           const colorIndex = i + 1;
           const selected = tool.type === "paint" && tool.colorIndex === colorIndex;
           return (
-            <button
-              key={colorIndex}
-              type="button"
-              aria-label={`Select color ${hex}`}
-              onClick={() => {
-                onSelectColor(colorIndex);
-              }}
-              style={{ backgroundColor: hex }}
-              className={cn(
-                "size-8 rounded-full border-2",
-                selected ? "border-[oklch(0.5485_0.1061_160.41)]" : "border-stone-300",
-              )}
-            />
+            <div key={colorIndex} className="flex flex-col items-center gap-1">
+              <button
+                type="button"
+                aria-label={`Select color ${hex}`}
+                onClick={() => {
+                  onSelectColor(colorIndex);
+                }}
+                style={{ backgroundColor: hex }}
+                className={cn(
+                  "size-8 rounded-full border-2",
+                  selected ? "border-[oklch(0.5485_0.1061_160.41)]" : "border-stone-300",
+                )}
+              />
+              <span className="text-xs text-stone-600 tabular-nums">{counts.get(colorIndex) ?? 0}</span>
+            </div>
           );
         })}
 
@@ -109,14 +119,19 @@ export default function PalettePanel({
           </div>
         ) : (
           !atCap && (
-            <button
-              type="button"
-              aria-label="Add a color"
-              onClick={openPicker}
-              className="flex size-8 items-center justify-center rounded-full border-2 border-dashed border-stone-300 text-lg leading-none text-stone-500 hover:border-stone-400"
-            >
-              +
-            </button>
+            <div className="flex flex-col items-center gap-1">
+              <button
+                type="button"
+                aria-label="Add a color"
+                onClick={openPicker}
+                className="flex size-8 items-center justify-center rounded-full border-2 border-dashed border-stone-300 text-lg leading-none text-stone-500 hover:border-stone-400"
+              >
+                +
+              </button>
+              <span aria-hidden="true" className="invisible text-xs tabular-nums">
+                0
+              </span>
+            </div>
           )
         )}
       </div>
