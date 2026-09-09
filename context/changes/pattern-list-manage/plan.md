@@ -447,15 +447,15 @@ this plan needs.
 
 #### Automated
 
-- [x] 2.1 Lint passes
-- [x] 2.2 Type-check passes
-- [x] 2.3 Build succeeds
+- [x] 2.1 Lint passes — 46025ac
+- [x] 2.2 Type-check passes — 46025ac
+- [x] 2.3 Build succeeds — 46025ac
 
 #### Manual
 
-- [x] 2.4 Deleting a pattern removes it immediately and its editor route redirects to /dashboard
-- [x] 2.5 Confirmation dialog shows before delete; Cancel leaves the pattern untouched
-- [x] 2.6 Deleting down from the cap reveals the create form without a page reload
-- [x] 2.7 Expired-session delete shows session-expired message and restores the row
-- [x] 2.8 Double-delete (already-gone pattern) shows no error
-- [x] 2.9 Network failure during delete restores the row and shows the generic error message
+- [x] 2.4 Deleting a pattern removes it immediately and its editor route redirects to /dashboard — 46025ac
+- [x] 2.5 Confirmation dialog shows before delete; Cancel leaves the pattern untouched — 46025ac
+- [x] 2.6 Deleting down from the cap reveals the create form without a page reload — 46025ac
+- [x] 2.7 Expired-session delete shows session-expired message and restores the row — 46025ac
+- [x] 2.8 Double-delete (already-gone pattern) shows no error — 46025ac
+- [x] 2.9 Network failure during delete restores the row and shows the generic error message — 46025ac
