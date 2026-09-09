@@ -3,7 +3,6 @@ import { usePatternGrid, lineCells, type GridCell } from "@/components/hooks/use
 import { useUnsavedChangesGuard } from "@/components/hooks/useUnsavedChangesGuard";
 import { Button } from "@/components/ui/button";
 import PalettePanel from "@/components/editor/PalettePanel";
-import ColorCounts from "@/components/editor/ColorCounts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -277,16 +276,16 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
 
       {saveError && <span className="text-sm text-red-700">{saveError}</span>}
 
-      <div className="flex w-full max-w-3xl flex-nowrap justify-center gap-12">
+      <div className="flex w-full justify-center">
         <PalettePanel
           palette={palette}
           tool={tool}
           atCap={atCap}
+          counts={counts}
           onAddColor={addColor}
           onSelectColor={selectColor}
           onSelectErase={selectErase}
         />
-        <ColorCounts palette={palette} counts={counts} />
       </div>
 
       <div className="w-fit overflow-auto rounded border border-stone-300">
