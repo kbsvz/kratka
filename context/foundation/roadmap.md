@@ -3,7 +3,7 @@ project: "kratka"
 version: 1
 status: draft
 created: 2026-08-27
-updated: 2026-09-08
+updated: 2026-09-09
 prd_version: 2
 main_goal: speed
 top_blocker: capacity
@@ -43,7 +43,7 @@ Crafters designing original cross-stitch schemes currently improvise with spread
 |------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|-------------------------------------------------------------------------------------------------------------|----------|
 | F-01 | patterns-schema-rls | (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible                          | —          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-011, FR-012, FR-013; Access Control                      | done |
 | S-01 | editor-draw-save    | create a pattern (set grid size), define a color palette, paint and erase cells with live per-color count, save it, and reopen any saved pattern to continue editing               | F-01 | FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-012, FR-014, FR-019 | done |
-| S-02 | pattern-list-manage | see all their saved patterns (name, grid size, last updated) and delete a pattern to free a slot                                                                                   | F-01          | FR-003, FR-011, FR-013                                                                                      | in-progress |
+| S-02 | pattern-list-manage | see all their saved patterns (name, grid size, last updated) and delete a pattern to free a slot                                                                                   | F-01          | FR-003, FR-011, FR-013                                                                                      | done |
 | S-03 | color-print-view    | open a clean print view for a saved pattern showing the grid, per-color thread counts, and a total time estimate; print via the browser's native dialog with no app UI on the page | S-01 | FR-003, FR-015, FR-016, FR-017, FR-019                                          | proposed |
 
 ## Streams
@@ -108,7 +108,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Smallest slice; low risk. The pattern list is the natural entry point for navigating to the editor (S-01) and the print view (S-03) — its layout should leave room for those navigation affordances even before those routes exist.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-03: Color print view with thread-count estimator
 
@@ -167,3 +167,4 @@ From PRD `## Non-Goals` — all confirmed during shaping:
 
 - **F-01: (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible** — Archived 2026-08-31 → `context/archive/2026-08-30-patterns-schema-rls/`. Lesson: —.
 - **S-01: create a pattern (set grid size), define a color palette, paint and erase cells with live per-color count, save it, and reopen any saved pattern to continue editing** — Archived 2026-09-08 → `context/archive/2026-08-31-editor-draw-save/`. Lesson: —.
+- **S-02: user can view a list of all their saved patterns showing each pattern's name, grid size (width × height), and last-updated time; and delete any pattern to free a slot, with a brief confirmation prompt before deletion** — Archived 2026-09-09 → `context/archive/2026-09-08-pattern-list-manage/`. Lesson: —.
