@@ -484,45 +484,45 @@ Not applicable — no data model or schema changes.
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npx astro check`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Build succeeds: `npm run build`
+- [x] 2.1 Type checking passes: `npx astro check` — d0f0ca0
+- [x] 2.2 Linting passes: `npm run lint` — d0f0ca0
+- [x] 2.3 Build succeeds: `npm run build` — d0f0ca0
 
 #### Manual
 
-- [x] 2.4 Page matches `my-patterns-page.html` mockup side-by-side
-- [x] 2.5 Exactly one sign-out control appears on the page (in the header), not two
-- [x] 2.6 Create pattern still works and redirects to the new pattern's editor
-- [x] 2.7 Delete still shows confirm dialog, removes the row, un-hides create form below cap
-- [x] 2.8 At the 3-pattern cap, the create form is replaced by the explanatory message
-- [x] 2.9 Session-expired delete error still shows its own "Sign in" prompt
+- [x] 2.4 Page matches `my-patterns-page.html` mockup side-by-side — d0f0ca0
+- [x] 2.5 Exactly one sign-out control appears on the page (in the header), not two — d0f0ca0
+- [x] 2.6 Create pattern still works and redirects to the new pattern's editor — d0f0ca0
+- [x] 2.7 Delete still shows confirm dialog, removes the row, un-hides create form below cap — d0f0ca0
+- [x] 2.8 At the 3-pattern cap, the create form is replaced by the explanatory message — d0f0ca0
+- [x] 2.9 Session-expired delete error still shows its own "Sign in" prompt — d0f0ca0
 
 ### Phase 3: Editor structural redesign
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npx astro check`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 Build succeeds: `npm run build`
+- [x] 3.1 Type checking passes: `npx astro check` — 874e526
+- [x] 3.2 Linting passes: `npm run lint` — 874e526
+- [x] 3.3 Build succeeds: `npm run build` — 874e526
 
 #### Manual
 
-- [ ] 3.4 Page structurally matches `pattern-editor-page.html` mockup
-- [ ] 3.5 Breadcrumb "My Patterns" link shows custom confirm dialog when dirty, navigates immediately when clean
-- [ ] 3.6 Sign-out from editor header works; native browser prompt appears when dirty
-- [ ] 3.7 Paint, erase, add-color, and the 30-color cap all still work exactly as before
-- [ ] 3.8 Save still works; "Unsaved changes" text tracks `isDirty` correctly
+- [x] 3.4 Page structurally matches `pattern-editor-page.html` mockup — 874e526
+- [x] 3.5 Breadcrumb "My Patterns" link shows custom confirm dialog when dirty, navigates immediately when clean — 874e526
+- [x] 3.6 Sign-out from editor header works; native browser prompt appears when dirty — 874e526
+- [x] 3.7 Paint, erase, add-color, and the 30-color cap all still work exactly as before — 874e526
+- [x] 3.8 Save still works; "Unsaved changes" text tracks `isDirty` correctly — 874e526
 
 ### Phase 4: Editor visual polish (canvas + remaining tokens)
 
 #### Automated
 
-- [ ] 4.1 Type checking passes: `npx astro check`
-- [ ] 4.2 Linting passes: `npm run lint`
-- [ ] 4.3 Build succeeds: `npm run build`
+- [x] 4.1 Type checking passes: `npx astro check` — f3d9384
+- [x] 4.2 Linting passes: `npm run lint` — f3d9384
+- [x] 4.3 Build succeeds: `npm run build` — f3d9384
 
 #### Manual
 
-- [ ] 4.4 Grid visually matches `pattern-editor-page.html` mockup
-- [ ] 4.5 Paint/erase on a large grid still redraws incrementally, no flicker or full-grid repaint
-- [ ] 4.6 Full page matches the mockup's color palette end-to-end
+- [x] 4.4 Grid visually matches `pattern-editor-page.html` mockup — f3d9384
+- [x] 4.5 Paint/erase on a large grid still redraws incrementally, no flicker or full-grid repaint — f3d9384
+- [x] 4.6 Full page matches the mockup's color palette end-to-end — f3d9384

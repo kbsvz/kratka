@@ -67,7 +67,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
       // would compound darker with every overdraw (visible as lines
       // getting "bolder" the more you paint). Opaque colors make every
       // redraw idempotent regardless of how many times it happens.
-      ctx.strokeStyle = heavy ? "#777777" : "#dddddd";
+      ctx.strokeStyle = heavy ? "#817b75" : "#dfdad4";
       // Odd widths (1px) need a half-pixel center to land crisply on the
       // pixel grid; even widths (2px) need a whole-pixel center instead.
       // Getting this wrong leaves the line at a fractional pixel offset,
@@ -87,7 +87,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
   const strokeRow = useCallback(
     (ctx: CanvasRenderingContext2D, row: number) => {
       const heavy = isHeavyRow(row);
-      ctx.strokeStyle = heavy ? "#777777" : "#dddddd";
+      ctx.strokeStyle = heavy ? "#817b75" : "#dfdad4";
       ctx.lineWidth = heavy ? 2 : 1;
       const y = heavy ? Math.round(row * CELL_SIZE) : Math.round(row * CELL_SIZE) + 0.5;
       ctx.beginPath();
@@ -124,7 +124,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
     for (let row = 0; row <= pattern.height; row++) strokeRow(ctx, row);
     ctx.restore();
 
-    ctx.fillStyle = "#000000cc";
+    ctx.fillStyle = "#24201ecc";
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -233,71 +233,60 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
   }, []);
 
   return (
-    <div className="bg-cosmic relative flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-stone-800">
-      {/*
-        shadcn's variant colors assume a light page background (this repo
-        never toggles the `dark` class); override explicitly to match this
-        page's own theme instead of the invisible-on-invisible result of
-        e.g. variant="outline"'s default bg-background/inherited color.
-      */}
-      <div className="absolute top-4 left-4">
-        <a
-          href="/?home"
-          onClick={(event) => {
-            event.preventDefault();
-            attemptNavigate(() => (window.location.href = "/?home"));
-          }}
-          className="text-xl font-bold text-stone-800 hover:opacity-80"
-        >
-          KRATKA
-        </a>
-      </div>
+    <div className="bg-kratka-bg text-kratka-ink min-h-screen">
+      <main className="px-7 py-8">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="text-[1.75rem]">
+            <a
+              href="/patterns"
+              onClick={(event) => {
+                event.preventDefault();
+                attemptNavigate(() => (window.location.href = "/patterns"));
+              }}
+              className="text-kratka-green font-normal hover:underline"
+            >
+              My Patterns
+            </a>{" "}
+            <span className="text-kratka-muted">/</span>{" "}
+            <span className="text-kratka-ink font-normal">{pattern.name}</span>
+          </div>
 
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <Button
-          variant="outline"
-          onClick={() => {
-            attemptNavigate(() => (window.location.href = "/patterns"));
-          }}
-          className="border-stone-300 bg-white text-stone-800 hover:bg-stone-100"
-        >
-          Back to dashboard
-        </Button>
-        <Button
-          onClick={save}
-          disabled={!isDirty || isSaving}
-          className="bg-kratka-green hover:bg-kratka-green-dark text-white disabled:opacity-40"
-        >
-          {isSaving ? "Saving…" : "Save"}
-        </Button>
-      </div>
+          <div className="flex items-center gap-4">
+            {saveError && <span className="text-sm text-red-700">{saveError}</span>}
+            {isDirty && <span className="text-kratka-muted text-sm">Unsaved changes</span>}
+            <Button
+              onClick={save}
+              disabled={!isDirty || isSaving}
+              className="bg-kratka-green hover:bg-kratka-green-dark text-white disabled:opacity-40"
+            >
+              {isSaving ? "Saving…" : "Save"}
+            </Button>
+          </div>
+        </div>
 
-      <h1 className="text-center text-2xl font-bold text-stone-800">{pattern.name}</h1>
+        <div className="grid grid-cols-[166px_minmax(0,1fr)] items-start gap-5">
+          <PalettePanel
+            palette={palette}
+            tool={tool}
+            atCap={atCap}
+            counts={counts}
+            onAddColor={addColor}
+            onSelectColor={selectColor}
+            onSelectErase={selectErase}
+          />
 
-      {saveError && <span className="text-sm text-red-700">{saveError}</span>}
-
-      <div className="flex w-full justify-center">
-        <PalettePanel
-          palette={palette}
-          tool={tool}
-          atCap={atCap}
-          counts={counts}
-          onAddColor={addColor}
-          onSelectColor={selectColor}
-          onSelectErase={selectErase}
-        />
-      </div>
-
-      <div className="w-fit overflow-auto rounded border border-stone-300">
-        <canvas
-          ref={canvasRef}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={stopPainting}
-          onPointerCancel={stopPainting}
-          className="cursor-crosshair touch-none"
-        />
-      </div>
+          <div className="min-w-0 overflow-auto">
+            <canvas
+              ref={canvasRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={stopPainting}
+              onPointerCancel={stopPainting}
+              className="cursor-crosshair touch-none"
+            />
+          </div>
+        </div>
+      </main>
 
       <AlertDialog open={pendingConfirm}>
         <AlertDialogContent>
