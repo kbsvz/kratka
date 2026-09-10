@@ -3,7 +3,7 @@ project: "kratka"
 version: 1
 status: draft
 created: 2026-08-27
-updated: 2026-09-09
+updated: 2026-09-10
 prd_version: 2
 main_goal: speed
 top_blocker: capacity
@@ -117,7 +117,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-003 (print view route added to `PROTECTED_ROUTES`), FR-015 (dedicated color print view with grid, palette legend showing per-color thread counts, and total time-estimate footer), FR-016 (print CSS hides all app UI — only grid and legend print), FR-017 (browser native print dialog; no file generated), FR-019 (heavy gridlines every 10th row and column with edge numbers in the print view)
 - **Prerequisites:** S-01 (print view reads a saved pattern; the save mechanism and pattern schema must be verified before print output can be trusted as correct)
 - **Parallel with:** S-02 (once S-01 is done, S-02 and S-03 can proceed independently)
-- **Blockers:** —
+- **Blockers:** Intentionally sequenced after `patterns-page-ui-improvements` (`context/changes/patterns-page-ui-improvements/`) — a UI redesign of the My Patterns and editor pages, not a PRD-derived slice (no FR mapping, no functional change), so it isn't tracked as its own roadmap item. User wants the redesign to land before starting S-03, so the print view is built against the new visual language rather than the old one.
 - **Unknowns:**
   - How to render the full 100×100 grid legibly on a printed A4/letter page (scaling, cell size, font size for edge numbers, color accuracy in print)? — Owner: team. Block: no (plannable; research belongs in `/10x-plan color-print-view`).
 - **Risk:** The business logic (thread-count and time-estimate computation) must exactly match the drawn grid — a discrepancy between what the designer drew and what the legend shows is the primary correctness NFR. Verified by comparing saved grid data to the rendered legend values in a test pattern.
