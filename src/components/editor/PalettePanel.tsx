@@ -24,11 +24,20 @@ export default function PalettePanel({
   onSelectColor,
   onSelectErase,
 }: PalettePanelProps) {
+  const asideRef = useRef<HTMLElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const [pendingColor, setPendingColor] = useState<string | null>(null);
 
-  const openPicker = () => {
-    colorInputRef.current?.click();
+  // Written directly to the DOM (not React state) so the position is in place
+  // before .click() opens the native picker in this same synchronous call.
+  const openPicker = (anchor: HTMLElement) => {
+    const aside = asideRef.current;
+    const input = colorInputRef.current;
+    if (aside && input) {
+      const anchorCenterY = anchor.getBoundingClientRect().top + anchor.offsetHeight / 2;
+      input.style.top = `${anchorCenterY - aside.getBoundingClientRect().top}px`;
+    }
+    input?.click();
   };
 
   const confirmPendingColor = () => {
@@ -42,7 +51,12 @@ export default function PalettePanel({
   };
 
   return (
-    <aside className="border-kratka-border bg-kratka-paper w-[166px] shrink-0 rounded-lg border p-3">
+    <aside
+      ref={asideRef}
+      className="border-kratka-border bg-kratka-paper relative flex h-full w-fit shrink-0 flex-col rounded-lg border p-1.5"
+    >
+      {/* Kept mounted regardless of pendingColor/atCap state — unmounting mid-interaction
+          closes the still-open native picker, since it fires onChange live while dragging. */}
       <input
         ref={colorInputRef}
         type="color"
@@ -51,11 +65,10 @@ export default function PalettePanel({
         onChange={(event) => {
           setPendingColor(event.target.value);
         }}
-        className="sr-only"
+        className="absolute top-0 right-0 size-px translate-x-full -translate-y-1/2 opacity-0"
       />
 
-      <h2 className="text-kratka-ink mb-2 text-xs font-bold">Tools</h2>
-      <div className="mb-3">
+      <div className="mb-3 shrink-0">
         <button
           type="button"
           aria-label="Erase"
@@ -72,81 +85,89 @@ export default function PalettePanel({
         </button>
       </div>
 
-      <hr className="border-kratka-border mb-3" />
+      <hr className="border-kratka-border mb-3 shrink-0" />
 
-      <div className="mb-2 flex items-baseline justify-between">
-        <h2 className="text-kratka-ink text-xs font-bold">Palette</h2>
-        <span className="text-kratka-muted text-[11px]">
-          {palette.length}/{MAX_PALETTE_COLORS}
-        </span>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mb-2 flex items-baseline justify-end">
+          <span className="text-kratka-muted text-[11px]">
+            {palette.length}/{MAX_PALETTE_COLORS}
+          </span>
+        </div>
+        <div className="grid grid-cols-[repeat(4,2rem)] gap-1.5">
+          {palette.map((hex, i) => {
+            const colorIndex = i + 1;
+            const selected = tool.type === "paint" && tool.colorIndex === colorIndex;
+            return (
+              <div key={colorIndex} className="flex flex-col items-center gap-1">
+                <button
+                  type="button"
+                  aria-label={`Select color ${hex}`}
+                  onClick={() => {
+                    onSelectColor(colorIndex);
+                  }}
+                  style={{ backgroundColor: hex }}
+                  className={cn(
+                    "size-8 rounded-full border-2",
+                    selected ? "border-kratka-green" : "border-kratka-border",
+                  )}
+                />
+                <span className="text-kratka-muted text-xs tabular-nums">{counts.get(colorIndex) ?? 0}</span>
+              </div>
+            );
+          })}
+
+          {pendingColor ? (
+            <>
+              <div className="flex flex-col items-center gap-1">
+                <div
+                  aria-hidden="true"
+                  style={{ backgroundColor: pendingColor }}
+                  className="border-kratka-border size-8 rounded-full border-2"
+                />
+                <span aria-hidden="true" className="invisible text-xs tabular-nums">
+                  0
+                </span>
+              </div>
+              <div className="col-span-4 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Confirm new color"
+                  onClick={confirmPendingColor}
+                  className="bg-kratka-green flex size-6 items-center justify-center rounded-full text-white"
+                >
+                  <Check className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Discard new color"
+                  onClick={cancelPendingColor}
+                  className="bg-kratka-border text-kratka-ink flex size-6 items-center justify-center rounded-full"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            </>
+          ) : (
+            !atCap && (
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  type="button"
+                  aria-label="Add a color"
+                  onClick={(event) => {
+                    openPicker(event.currentTarget);
+                  }}
+                  className="text-kratka-muted hover:border-kratka-muted border-kratka-border flex size-8 items-center justify-center rounded-full border-2 border-dashed text-lg leading-none"
+                >
+                  +
+                </button>
+                <span aria-hidden="true" className="invisible text-xs tabular-nums">
+                  0
+                </span>
+              </div>
+            )
+          )}
+        </div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        {palette.map((hex, i) => {
-          const colorIndex = i + 1;
-          const selected = tool.type === "paint" && tool.colorIndex === colorIndex;
-          return (
-            <div key={colorIndex} className="flex flex-col items-center gap-1">
-              <button
-                type="button"
-                aria-label={`Select color ${hex}`}
-                onClick={() => {
-                  onSelectColor(colorIndex);
-                }}
-                style={{ backgroundColor: hex }}
-                className={cn(
-                  "size-8 rounded-full border-2",
-                  selected ? "border-kratka-green" : "border-kratka-border",
-                )}
-              />
-              <span className="text-kratka-muted text-xs tabular-nums">{counts.get(colorIndex) ?? 0}</span>
-            </div>
-          );
-        })}
-
-        {pendingColor ? (
-          <div className="col-span-3 flex items-center gap-1">
-            <div
-              aria-hidden="true"
-              style={{ backgroundColor: pendingColor }}
-              className="border-kratka-border size-8 rounded-full border-2"
-            />
-            <button
-              type="button"
-              aria-label="Confirm new color"
-              onClick={confirmPendingColor}
-              className="bg-kratka-green flex size-6 items-center justify-center rounded-full text-white"
-            >
-              <Check className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              aria-label="Discard new color"
-              onClick={cancelPendingColor}
-              className="bg-kratka-border text-kratka-ink flex size-6 items-center justify-center rounded-full"
-            >
-              <X className="size-3.5" />
-            </button>
-          </div>
-        ) : (
-          !atCap && (
-            <div className="flex flex-col items-center gap-1">
-              <button
-                type="button"
-                aria-label="Add a color"
-                onClick={openPicker}
-                className="text-kratka-muted hover:border-kratka-muted border-kratka-border flex size-8 items-center justify-center rounded-full border-2 border-dashed text-lg leading-none"
-              >
-                +
-              </button>
-              <span aria-hidden="true" className="invisible text-xs tabular-nums">
-                0
-              </span>
-            </div>
-          )
-        )}
-      </div>
-
-      {atCap && <p className="text-kratka-muted mt-3 text-xs">Palette is full ({MAX_PALETTE_COLORS} colors).</p>}
     </aside>
   );
 }
