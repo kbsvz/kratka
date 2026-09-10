@@ -24,7 +24,7 @@ export interface PatternEstimate {
 export function estimatePattern(grid: PatternGrid, palette: PatternPalette): PatternEstimate {
   const cellCounts: number[] = Array.from({ length: palette.length }, () => 0);
   for (const value of grid) {
-    if (value === 0) continue;
+    if (value === 0 || value > palette.length) continue;
     cellCounts[value - 1] = (cellCounts[value - 1] ?? 0) + 1;
   }
 

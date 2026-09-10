@@ -409,8 +409,8 @@ None — no schema or data changes.
 
 #### Manual
 
-- [ ] 2.4 Print preview shows only grid/legend/footer, no app chrome, colors visible
-- [ ] 2.5 Grid fits one page width in print preview for both 20×20 and 100×100 test patterns
+- [x] 2.4 Print preview shows only grid/legend/footer, no app chrome, colors visible
+- [x] 2.5 Grid fits one page width in print preview for both 20×20 and 100×100 test patterns
 - [x] 2.6 Dashboard Actions column shows a working Print link per pattern
 - [x] 2.7 Editor action row shows a working Print link, guarded by the unsaved-changes dialog
 - [x] 2.8 Print page's Close link navigates back to the pattern's editor page (/patterns/<id>)
