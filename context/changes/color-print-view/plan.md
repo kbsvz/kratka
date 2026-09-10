@@ -17,7 +17,7 @@ native dialog with no app chrome on the page.
 - `src/pages/editor/[id].astro` is the only existing "fetch one pattern by id" implementation:
   UUID-shape pre-check, inline server-side Supabase `.select().eq("id", id).single()`, RLS collapses
   "not found" and "not owned" into the same `data === null` branch, well-formed-but-missing → 302 to
-  `/dashboard`, malformed id → 404. No JSON `GET /api/patterns/[id]` endpoint exists (removed as dead
+  `/patterns`, malformed id → 404. No JSON `GET /api/patterns/[id]` endpoint exists (removed as dead
   code during S-01 — `src/pages/api/patterns/[id].ts` only exports `PATCH`/`DELETE`).
 - The editor renders the grid on an interactive `<canvas>` (`src/components/editor/PatternEditor.tsx`)
   with the FR-019 heavy-line/edge-number logic (`HEAVY_LINE_EVERY = 10`, `EDGE_LABEL_SPACE`) written
@@ -33,9 +33,12 @@ native dialog with no app chrome on the page.
   using that color) × 45 cm; total time = (total filled cells) ÷ 150 stitches/hour. Both constants
   are non-configurable in the MVP.
 - `PatternDashboard.tsx`'s Actions column was deliberately left open during S-02 for a future Print
-  action (`pattern-list-manage/plan-brief.md`), and is not yet wired to anything.
-- `src/middleware.ts:4` — `PROTECTED_ROUTES = ["/dashboard", "/editor"]` — a new top-level segment
-  must be added explicitly.
+  action, but the `patterns-page-ui-improvements` redesign (completed and archived earlier today)
+  collapsed that column into a single untitled cell containing only a "Delete" text link — there is
+  no longer a separate reserved slot; Print must share that cell (see Phase 2 item 2).
+- `src/middleware.ts:4` — `PROTECTED_ROUTES = ["/patterns", "/editor"]` (renamed from `/dashboard`
+  by the same redesign) — already covers the new print route via its `startsWith` match, no edit
+  needed.
 - No JS test runner exists in this repo (`package.json` has no vitest/jest/playwright dependency);
   only pgTAP covers the database layer.
 
@@ -125,16 +128,19 @@ shape of `src/pages/editor/[id].astro:1-46` (UUID pre-check, inline Supabase
 
 **Contract**: Route path `src/pages/patterns/[id]/print.astro` → served at `/patterns/<id>/print`.
 Same not-found/not-owned semantics as the editor route (malformed id → 404, well-formed-but-missing
-or not-owned → 302 to `/dashboard`). Calls `estimatePattern` on the fetched `palette`/`grid` and
+or not-owned → 302 to `/patterns`). Calls `estimatePattern` on the fetched `palette`/`grid` and
 passes the results plus pattern data to the grid-rendering markup below.
 
-#### 3. Protected routes
+#### 3. Protected routes (verify only — no change needed)
 
 **File**: `src/middleware.ts`
 
 **Intent**: Gate the new route behind auth, consistent with FR-003.
 
-**Contract**: Add `"/patterns"` to the `PROTECTED_ROUTES` array (`src/middleware.ts:4`).
+**Contract**: `PROTECTED_ROUTES` (`src/middleware.ts:4`) already includes `"/patterns"` (added by
+the `patterns-page-ui-improvements` redesign), and the guard matches via `startsWith`, so
+`/patterns/<id>/print` is already covered. No edit required here — just confirm this during
+implementation rather than looking for something to add.
 
 #### 4. SVG grid render + legend + footer
 
@@ -171,7 +177,7 @@ SVG `<text>` offsets.
   thread-length figures and footer time match hand-calculated values (cells × 45 cm; total filled ÷
   150 hr).
 - Navigating to `/patterns/<id>/print` for another user's pattern id (or a well-formed but
-  nonexistent id) redirects to `/dashboard`; a malformed id (e.g. `/patterns/not-a-uuid/print`)
+  nonexistent id) redirects to `/patterns`; a malformed id (e.g. `/patterns/not-a-uuid/print`)
   404s.
 - A pattern with `grid.length === 0` (created but never painted) renders a blank grid with an empty
   legend and zero total time, without erroring.
@@ -209,14 +215,19 @@ applied broadly enough to cover the SVG fills and any CSS-background swatches in
 
 #### 2. Dashboard entry point
 
-**File**: `src/components/dashboard/PatternDashboard.tsx` (Actions column)
+**File**: `src/components/patterns/PatternDashboard.tsx` (pattern-row action column)
 
 **Intent**: Give a user a way to reach the print view without typing a URL, completing FR-015's
 end-to-end flow.
 
-**Contract**: Add a "Print" link (`<a href={`/patterns/${pattern.id}/print`}>`) into the reserved
-Actions-column slot, alongside the existing per-row actions, following the same link pattern already
-used for the editor link (`PatternDashboard.tsx:120`).
+**Contract**: The redesign (`patterns-page-ui-improvements`) collapsed the old "Actions" column
+into a single untitled `TableCell` (`PatternDashboard.tsx:148,168-178`) containing only a
+low-emphasis red "Delete" text button — there is no separate reserved slot for Print. Add a
+"Print" text link (`<a href={`/patterns/${pattern.id}/print`}>`, styled consistently with Delete:
+`text-sm font-normal hover:underline`, in `text-kratka-green` to distinguish a safe action from
+Delete's `text-kratka-red`) as a sibling in the same `TableCell`, placed before Delete
+(e.g. "Print · Delete"). No new table column — this keeps the row-action column's shape as shipped
+by the redesign.
 
 ### Success Criteria:
 
@@ -284,7 +295,7 @@ None — no schema or data changes.
 - Roadmap slice: `context/foundation/roadmap.md:113-124` (S-03)
 - Prior implementation to follow: `src/pages/editor/[id].astro:1-46`,
   `src/components/editor/PatternEditor.tsx:19-159` (FR-019 reference implementation)
-- Reserved dashboard slot: `src/components/dashboard/PatternDashboard.tsx` (Actions column)
+- Dashboard entry point: `src/components/patterns/PatternDashboard.tsx` (pattern-row action column)
 
 ## Progress
 
@@ -302,7 +313,7 @@ None — no schema or data changes.
 #### Manual
 
 - [ ] 1.4 Known test pattern's legend thread lengths and footer time match hand-calculated values
-- [ ] 1.5 Not-owned/nonexistent id redirects to /dashboard; malformed id 404s
+- [ ] 1.5 Not-owned/nonexistent id redirects to /patterns; malformed id 404s
 - [ ] 1.6 Never-painted pattern (grid.length === 0) renders blank grid with empty legend, zero time,
       no error
 - [ ] 1.7 Heavy gridlines/edge numbers appear every 10th row/column, including correct partial
