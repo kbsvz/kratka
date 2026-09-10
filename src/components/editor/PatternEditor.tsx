@@ -233,8 +233,8 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
   }, []);
 
   return (
-    <div className="bg-kratka-bg text-kratka-ink min-h-screen">
-      <main className="px-7 py-8">
+    <div className="bg-kratka-bg text-kratka-ink flex min-h-0 flex-1 flex-col">
+      <main className="flex min-h-0 flex-1 flex-col px-7 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="text-[1.75rem]">
             <a
@@ -254,6 +254,16 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
           <div className="flex items-center gap-4">
             {saveError && <span className="text-sm text-red-700">{saveError}</span>}
             {isDirty && <span className="text-kratka-muted text-sm">Unsaved changes</span>}
+            <a
+              href={`/patterns/${pattern.id}/print`}
+              onClick={(event) => {
+                event.preventDefault();
+                attemptNavigate(() => (window.location.href = `/patterns/${pattern.id}/print`));
+              }}
+              className="text-kratka-green text-sm font-normal hover:underline"
+            >
+              Print
+            </a>
             <Button
               onClick={save}
               disabled={!isDirty || isSaving}
@@ -264,7 +274,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
           </div>
         </div>
 
-        <div className="grid grid-cols-[166px_minmax(0,1fr)] items-start gap-5">
+        <div className="grid min-h-0 flex-1 grid-cols-[166px_minmax(0,1fr)] items-start gap-5">
           <PalettePanel
             palette={palette}
             tool={tool}
@@ -275,7 +285,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
             onSelectErase={selectErase}
           />
 
-          <div className="min-w-0 overflow-auto">
+          <div className="h-full min-w-0 overflow-auto">
             <canvas
               ref={canvasRef}
               onPointerDown={handlePointerDown}

@@ -1,0 +1,227 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { createClient } from "@/lib/supabase";
+import { estimatePattern, formatDuration } from "@/lib/patternEstimator";
+import type { PatternEditorData, PatternGrid, PatternPalette } from "@/types";
+
+const { id } = Astro.params;
+
+// Same UUID-shape pre-check as the editor route: a pattern id is always a
+// DB-generated uuid, so anything else is a genuine 404 rather than a
+// "not found or not owned" case.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isWellFormedId = !!id && UUID_RE.test(id);
+
+const supabase = isWellFormedId ? createClient(Astro.request.headers, Astro.cookies) : null;
+const { data } = supabase
+  ? await supabase
+      .from("patterns")
+      .select("id, name, width, height, palette, grid")
+      .eq("id", id ?? "")
+      .single()
+  : { data: null };
+
+// RLS hides patterns the caller doesn't own, so "not found" and "not owned" both land here.
+const pattern: PatternEditorData | null = data
+  ? {
+      ...data,
+      palette: data.palette as unknown as PatternPalette,
+      grid: data.grid as unknown as PatternGrid,
+    }
+  : null;
+
+if (!pattern) {
+  if (isWellFormedId) {
+    Astro.response.status = 302;
+    Astro.response.headers.set("Location", "/patterns");
+  } else {
+    Astro.response.status = 404;
+  }
+}
+
+const estimate = pattern ? estimatePattern(pattern.grid, pattern.palette) : null;
+
+const CELL_UNIT = 18; // CSS px per cell — matches the editor's CELL_SIZE for a familiar look.
+const HEAVY_LINE_EVERY = 10; // FR-019
+const EDGE_LABEL_SPACE = 24; // CSS px reserved for the edge-number gutter.
+
+const svgWidth = pattern ? pattern.width * CELL_UNIT + EDGE_LABEL_SPACE * 2 : 0;
+const svgHeight = pattern ? pattern.height * CELL_UNIT + EDGE_LABEL_SPACE * 2 : 0;
+
+// Caps each cell at 5mm both on screen and when printed, so the preview matches
+// the printed output exactly — computed from the full SVG width (grid +
+// edge-label gutter) so the gutter scales with it, not just the grid itself.
+const MAX_CELL_MM = 5;
+const maxPrintWidthMm = pattern ? (svgWidth / CELL_UNIT) * MAX_CELL_MM : 0;
+
+const isHeavy = (n: number, max: number) => n % HEAVY_LINE_EVERY === 0 || n === max;
+
+const filledCells = pattern
+  ? Array.from({ length: pattern.grid.length }, (_, index) => index)
+      .map((index) => {
+        const value = pattern.grid[index];
+        if (!value) return null;
+        return {
+          row: Math.floor(index / pattern.width),
+          col: index % pattern.width,
+          hex: pattern.palette[value - 1] ?? "#000000",
+        };
+      })
+      .filter((cell): cell is { row: number; col: number; hex: string } => cell !== null)
+  : [];
+
+const vLines = pattern
+  ? Array.from({ length: pattern.width + 1 }, (_, col) => ({ col, heavy: isHeavy(col, pattern.width) }))
+  : [];
+const hLines = pattern
+  ? Array.from({ length: pattern.height + 1 }, (_, row) => ({ row, heavy: isHeavy(row, pattern.height) }))
+  : [];
+
+const topLabels = pattern
+  ? Array.from({ length: Math.floor(pattern.width / HEAVY_LINE_EVERY) }, (_, i) => (i + 1) * HEAVY_LINE_EVERY)
+  : [];
+const leftLabels = pattern
+  ? Array.from({ length: Math.floor(pattern.height / HEAVY_LINE_EVERY) }, (_, i) => (i + 1) * HEAVY_LINE_EVERY)
+  : [];
+---
+
+{
+  pattern && estimate && (
+    <Layout title={`Pattern — ${pattern.name}`}>
+      <div class="mx-auto max-w-4xl p-6">
+        <div class="mb-4 flex items-center justify-between">
+          <h1 class="text-xl font-bold">{pattern.name}</h1>
+          <button
+            id="print-button"
+            type="button"
+            class="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 print:hidden"
+          >
+            Print
+          </button>
+        </div>
+
+        <svg
+          id="pattern-grid-svg"
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          style="width: 100%; height: auto;"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="0" y="0" width={svgWidth} height={svgHeight} fill="#ffffff" />
+          {filledCells.map((cell) => (
+            <rect
+              x={EDGE_LABEL_SPACE + cell.col * CELL_UNIT}
+              y={EDGE_LABEL_SPACE + cell.row * CELL_UNIT}
+              width={CELL_UNIT}
+              height={CELL_UNIT}
+              fill={cell.hex}
+            />
+          ))}
+          {vLines.map((line) => (
+            <line
+              x1={EDGE_LABEL_SPACE + line.col * CELL_UNIT}
+              y1={EDGE_LABEL_SPACE}
+              x2={EDGE_LABEL_SPACE + line.col * CELL_UNIT}
+              y2={EDGE_LABEL_SPACE + pattern.height * CELL_UNIT}
+              stroke={line.heavy ? "#817b75" : "#dfdad4"}
+              stroke-width={line.heavy ? 2 : 1}
+            />
+          ))}
+          {hLines.map((line) => (
+            <line
+              x1={EDGE_LABEL_SPACE}
+              y1={EDGE_LABEL_SPACE + line.row * CELL_UNIT}
+              x2={EDGE_LABEL_SPACE + pattern.width * CELL_UNIT}
+              y2={EDGE_LABEL_SPACE + line.row * CELL_UNIT}
+              stroke={line.heavy ? "#817b75" : "#dfdad4"}
+              stroke-width={line.heavy ? 2 : 1}
+            />
+          ))}
+          {topLabels.map((n) => (
+            <text
+              x={EDGE_LABEL_SPACE + n * CELL_UNIT}
+              y={EDGE_LABEL_SPACE / 2}
+              font-size="10"
+              text-anchor="middle"
+              dominant-baseline="middle"
+              fill="#24201ecc"
+            >
+              {n}
+            </text>
+          ))}
+          {leftLabels.map((n) => (
+            <text
+              x={EDGE_LABEL_SPACE / 2}
+              y={EDGE_LABEL_SPACE + n * CELL_UNIT}
+              font-size="10"
+              text-anchor="middle"
+              dominant-baseline="middle"
+              fill="#24201ecc"
+            >
+              {n}
+            </text>
+          ))}
+        </svg>
+
+        <section class="mt-6">
+          {estimate.colors.length === 0 ? (
+            <p class="text-sm text-stone-500">No colors used yet.</p>
+          ) : (
+            <ul class="grid grid-cols-5 gap-x-4 gap-y-2">
+              {estimate.colors.map((color) => (
+                <li class="flex items-center gap-3 text-sm">
+                  <span
+                    class="inline-block size-4 shrink-0 rounded-full border border-stone-300"
+                    style={`background-color: ${color.hex}`}
+                  />
+                  <span>{Math.ceil(color.threadCm)} cm</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <footer class="mt-6 flex items-center justify-between text-sm font-medium">
+          <span>Estimated time: ~{formatDuration(estimate.totalHours)}</span>
+          <a
+            href={`/patterns/${pattern.id}`}
+            class="rounded-lg border border-stone-300 bg-white px-4 py-2 font-medium hover:bg-stone-100 print:hidden"
+          >
+            Close
+          </a>
+        </footer>
+      </div>
+    </Layout>
+  )
+}
+
+<script>
+  document.getElementById("print-button")?.addEventListener("click", () => {
+    window.print();
+  });
+</script>
+
+<style define:vars={{ maxPrintWidthMm: `${maxPrintWidthMm}mm` }}>
+  /* Caps each grid cell at 5mm both on screen and on paper, so the preview
+     matches the printed output — active in both media, not just @media print. */
+  :global(#pattern-grid-svg) {
+    max-width: var(--maxPrintWidthMm);
+  }
+
+  @media print {
+    :global(html),
+    :global(body) {
+      margin: 0;
+    }
+    /* Config-missing banner from Layout.astro, in the unlikely case it renders. */
+    :global(.banner) {
+      display: none;
+    }
+    :global(*) {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    @page {
+      margin: 1cm;
+    }
+  }
+</style>

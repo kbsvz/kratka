@@ -9,7 +9,8 @@ const { id } = Astro.params;
 const { user } = Astro.locals;
 
 // A pattern id is always a DB-generated uuid. Anything else (e.g. "new", a
-// leftover bookmark from the deleted /editor/new page) was never a real
+// leftover bookmark from the deleted /editor/new page — this route lived at
+// /editor/[id] before being renamed to /patterns/[id]) was never a real
 // pattern id, so it's a genuine 404 rather than a "not found or not owned"
 // case — no need to spend a query on input that can't possibly match.
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -51,8 +52,10 @@ if (!pattern) {
 {
   pattern && (
     <Layout title={pattern.name}>
-      <AppHeader email={user?.email ?? ""} />
-      <PatternEditor client:load pattern={pattern} />
+      <div class="flex h-screen flex-col overflow-hidden">
+        <AppHeader email={user?.email ?? ""} />
+        <PatternEditor client:load pattern={pattern} />
+      </div>
     </Layout>
   )
 }

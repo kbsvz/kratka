@@ -94,7 +94,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:**
   - What rendering approach (CSS grid, canvas, SVG) achieves < 100 ms paint feedback on a 100×100 grid in the target desktop browsers without excessive memory use? — Owner: team. Block: no (plannable; technical research belongs in `/10x-plan editor-draw-save`).
-  - How does a user navigate to reopen a specific saved pattern before S-02's list exists? — Owner: team. Block: no (a direct route to a known pattern ID, e.g. `/editor/<id>`, is sufficient to verify FR-012 for this slice; building any pattern list/picker UI is explicitly out of scope here — that's S-02's job).
+  - How does a user navigate to reopen a specific saved pattern before S-02's list exists? — Owner: team. Block: no (a direct route to a known pattern ID, e.g. `/patterns/<id>` — originally `/editor/<id>`, renamed during `color-print-view` to unify with the API and print routes — is sufficient to verify FR-012 for this slice; building any pattern list/picker UI is explicitly out of scope here — that's S-02's job).
 - **Risk:** The largest slice by FR count, necessarily so — create, draw, and save are inseparable steps in one user workflow; none is independently useful. The main execution risk is grid rendering performance on large grids; this must be prototyped early within the change, not left for the end.
 - **Status:** done
 
