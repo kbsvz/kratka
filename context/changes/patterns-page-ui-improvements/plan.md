@@ -484,18 +484,18 @@ Not applicable — no data model or schema changes.
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npx astro check`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Build succeeds: `npm run build`
+- [x] 2.1 Type checking passes: `npx astro check` — d0f0ca0
+- [x] 2.2 Linting passes: `npm run lint` — d0f0ca0
+- [x] 2.3 Build succeeds: `npm run build` — d0f0ca0
 
 #### Manual
 
-- [x] 2.4 Page matches `my-patterns-page.html` mockup side-by-side
-- [x] 2.5 Exactly one sign-out control appears on the page (in the header), not two
-- [x] 2.6 Create pattern still works and redirects to the new pattern's editor
-- [x] 2.7 Delete still shows confirm dialog, removes the row, un-hides create form below cap
-- [x] 2.8 At the 3-pattern cap, the create form is replaced by the explanatory message
-- [x] 2.9 Session-expired delete error still shows its own "Sign in" prompt
+- [x] 2.4 Page matches `my-patterns-page.html` mockup side-by-side — d0f0ca0
+- [x] 2.5 Exactly one sign-out control appears on the page (in the header), not two — d0f0ca0
+- [x] 2.6 Create pattern still works and redirects to the new pattern's editor — d0f0ca0
+- [x] 2.7 Delete still shows confirm dialog, removes the row, un-hides create form below cap — d0f0ca0
+- [x] 2.8 At the 3-pattern cap, the create form is replaced by the explanatory message — d0f0ca0
+- [x] 2.9 Session-expired delete error still shows its own "Sign in" prompt — d0f0ca0
 
 ### Phase 3: Editor structural redesign
 

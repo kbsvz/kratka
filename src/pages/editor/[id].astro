@@ -1,10 +1,12 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
+import AppHeader from "@/components/AppHeader.astro";
 import PatternEditor from "@/components/editor/PatternEditor";
 import type { PatternEditorData, PatternGrid, PatternPalette } from "@/types";
 
 const { id } = Astro.params;
+const { user } = Astro.locals;
 
 // A pattern id is always a DB-generated uuid. Anything else (e.g. "new", a
 // leftover bookmark from the deleted /editor/new page) was never a real
@@ -49,6 +51,7 @@ if (!pattern) {
 {
   pattern && (
     <Layout title={pattern.name}>
+      <AppHeader email={user?.email ?? ""} />
       <PatternEditor client:load pattern={pattern} />
     </Layout>
   )
