@@ -274,7 +274,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
           </div>
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-cols-[166px_minmax(0,1fr)] items-start gap-5">
+        <div className="grid min-h-0 flex-1 grid-cols-[auto_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] items-start gap-5">
           <PalettePanel
             palette={palette}
             tool={tool}
