@@ -1,10 +1,10 @@
 ---
 change_id: editor-palette-merge
 title: "Editor: merge palette picker and color counts into one panel"
-status: impl_reviewed
+status: archived
 created: 2026-09-09
 updated: 2026-09-09
-archived_at: null
+archived_at: 2026-09-09T18:27:13Z
 roadmap_ref: null
 prd_refs:
   - FR-007

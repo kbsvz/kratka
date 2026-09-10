@@ -1,10 +1,10 @@
 ---
 change_id: pattern-list-manage
 title: "Pattern dashboard: list all patterns, delete a pattern"
-status: impl_reviewed
+status: archived
 created: 2026-09-08
 updated: 2026-09-09
-archived_at: null
+archived_at: 2026-09-09T18:24:18Z
 roadmap_ref: S-02
 prd_refs:
   - FR-003
