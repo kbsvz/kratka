@@ -1,0 +1,22 @@
+---
+interface Props {
+  email: string;
+}
+
+const { email } = Astro.props;
+---
+
+<header class="border-kratka-border bg-kratka-paper flex h-16 items-center justify-between border-b px-8">
+  <a href="/?home" class="text-kratka-ink text-xl font-extrabold tracking-tight hover:opacity-80">KRATKA</a>
+  <div class="flex items-center gap-4">
+    <span class="text-kratka-muted text-sm">{email}</span>
+    <form method="POST" action="/api/auth/signout">
+      <button
+        type="submit"
+        class="border-kratka-border bg-kratka-paper text-kratka-ink hover:text-kratka-red rounded-lg border px-3 py-2 text-sm font-medium"
+      >
+        Sign out
+      </button>
+    </form>
+  </div>
+</header>

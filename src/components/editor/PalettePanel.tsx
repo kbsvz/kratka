@@ -13,6 +13,8 @@ interface PalettePanelProps {
   onSelectErase: () => void;
 }
 
+const toolButtonClass = "flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-bold";
+
 export default function PalettePanel({
   palette,
   tool,
@@ -40,8 +42,7 @@ export default function PalettePanel({
   };
 
   return (
-    // max-w-3xl fits ~15 swatch cells per row before wrapping.
-    <div className="w-full max-w-3xl rounded-2xl border border-stone-200 bg-white/70 p-4 text-stone-800">
+    <aside className="border-kratka-border bg-kratka-paper w-[166px] shrink-0 rounded-lg border p-3">
       <input
         ref={colorInputRef}
         type="color"
@@ -53,24 +54,33 @@ export default function PalettePanel({
         className="sr-only"
       />
 
-      <div className="flex flex-wrap items-start gap-3">
-        <div className="flex flex-col items-center gap-1">
-          <button
-            type="button"
-            aria-label="Erase"
-            onClick={onSelectErase}
-            className={cn(
-              "flex size-8 items-center justify-center rounded-full border-2 bg-white text-stone-600",
-              tool.type === "erase" ? "border-[oklch(0.5485_0.1061_160.41)]" : "border-stone-300",
-            )}
-          >
-            <Eraser className="size-4" />
-          </button>
-          <span aria-hidden="true" className="invisible text-xs tabular-nums">
-            0
-          </span>
-        </div>
+      <h2 className="text-kratka-ink mb-2 text-xs font-bold">Tools</h2>
+      <div className="mb-3">
+        <button
+          type="button"
+          aria-label="Erase"
+          onClick={onSelectErase}
+          className={cn(
+            toolButtonClass,
+            "w-full",
+            tool.type === "erase"
+              ? "bg-kratka-green/10 border-kratka-green text-kratka-green"
+              : "border-kratka-border text-kratka-muted bg-white",
+          )}
+        >
+          <Eraser className="size-3.5" /> Erase
+        </button>
+      </div>
 
+      <hr className="border-kratka-border mb-3" />
+
+      <div className="mb-2 flex items-baseline justify-between">
+        <h2 className="text-kratka-ink text-xs font-bold">Palette</h2>
+        <span className="text-kratka-muted text-[11px]">
+          {palette.length}/{MAX_PALETTE_COLORS}
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
         {palette.map((hex, i) => {
           const colorIndex = i + 1;
           const selected = tool.type === "paint" && tool.colorIndex === colorIndex;
@@ -85,26 +95,26 @@ export default function PalettePanel({
                 style={{ backgroundColor: hex }}
                 className={cn(
                   "size-8 rounded-full border-2",
-                  selected ? "border-[oklch(0.5485_0.1061_160.41)]" : "border-stone-300",
+                  selected ? "border-kratka-green" : "border-kratka-border",
                 )}
               />
-              <span className="text-xs text-stone-600 tabular-nums">{counts.get(colorIndex) ?? 0}</span>
+              <span className="text-kratka-muted text-xs tabular-nums">{counts.get(colorIndex) ?? 0}</span>
             </div>
           );
         })}
 
         {pendingColor ? (
-          <div className="flex items-center gap-1">
+          <div className="col-span-3 flex items-center gap-1">
             <div
               aria-hidden="true"
               style={{ backgroundColor: pendingColor }}
-              className="size-8 rounded-full border-2 border-stone-300"
+              className="border-kratka-border size-8 rounded-full border-2"
             />
             <button
               type="button"
               aria-label="Confirm new color"
               onClick={confirmPendingColor}
-              className="flex size-6 items-center justify-center rounded-full bg-[oklch(0.5485_0.1061_160.41)] text-white"
+              className="bg-kratka-green flex size-6 items-center justify-center rounded-full text-white"
             >
               <Check className="size-3.5" />
             </button>
@@ -112,7 +122,7 @@ export default function PalettePanel({
               type="button"
               aria-label="Discard new color"
               onClick={cancelPendingColor}
-              className="flex size-6 items-center justify-center rounded-full bg-stone-300 text-stone-700"
+              className="bg-kratka-border text-kratka-ink flex size-6 items-center justify-center rounded-full"
             >
               <X className="size-3.5" />
             </button>
@@ -124,7 +134,7 @@ export default function PalettePanel({
                 type="button"
                 aria-label="Add a color"
                 onClick={openPicker}
-                className="flex size-8 items-center justify-center rounded-full border-2 border-dashed border-stone-300 text-lg leading-none text-stone-500 hover:border-stone-400"
+                className="text-kratka-muted hover:border-kratka-muted border-kratka-border flex size-8 items-center justify-center rounded-full border-2 border-dashed text-lg leading-none"
               >
                 +
               </button>
@@ -136,7 +146,7 @@ export default function PalettePanel({
         )}
       </div>
 
-      {atCap && <p className="mt-3 text-xs text-stone-500">Palette is full ({MAX_PALETTE_COLORS} colors).</p>}
-    </div>
+      {atCap && <p className="text-kratka-muted mt-3 text-xs">Palette is full ({MAX_PALETTE_COLORS} colors).</p>}
+    </aside>
   );
 }

@@ -116,7 +116,7 @@ Since production deploys are owned by Cloudflare Workers Builds (Phase 5) rather
   npx wrangler deploy
   ```
 - [ ] Wrangler prints the live URL (`kratka.<your-subdomain>.workers.dev`) — open it and confirm the homepage renders
-- [ ] Confirm auth flow works end-to-end against production Supabase: sign up / sign in / hit `/dashboard`
+- [ ] Confirm auth flow works end-to-end against production Supabase: sign up / sign in / hit `/patterns`
 - [ ] **Smoke test** (mitigates infra.md's finding that `wrangler deploy` exits 0 on upload, not on first successful request):
   ```bash
   curl -sf https://kratka.<your-subdomain>.workers.dev/ > /dev/null && echo OK
@@ -175,7 +175,7 @@ Per your decision, GitHub Actions does **not** get a deploy job — Cloudflare W
 ## Phase 9 — Security/caching guardrails (pre-launch check)
 
 - [ ] Confirm no global Cloudflare cache rule is applied to the account/zone that would cache authenticated SSR routes (Dashboard → Caching → Configuration) — Workers don't cache dynamic routes by default, so this is a check for _accidental_ misconfiguration, not a setup step
-- [ ] Confirm `src/middleware.ts`'s protected routes (currently `/dashboard`) send `Cache-Control: private, no-store` — not currently set anywhere in `middleware.ts`; add this header for protected routes before launch to close the gap infra.md's Unknown Unknowns flags
+- [ ] Confirm `src/middleware.ts`'s protected routes (currently `/patterns`) send `Cache-Control: private, no-store` — not currently set anywhere in `middleware.ts`; add this header for protected routes before launch to close the gap infra.md's Unknown Unknowns flags
 - [ ] `npm ls astro @astrojs/cloudflare` — confirm versions stay ≥ the CVE-2025-65019 patched versions (`astro` ≥ 5.15.9, `@astrojs/cloudflare` > 12.6.10 — currently 6.3.1 / 13.5.0, well clear)
 
 ---

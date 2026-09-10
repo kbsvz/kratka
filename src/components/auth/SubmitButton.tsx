@@ -14,7 +14,7 @@ export function SubmitButton({ icon, children }: SubmitButtonProps) {
   return (
     <Button
       type="submit"
-      className="w-full rounded-lg bg-[oklch(0.5485_0.1061_160.41)] px-4 py-2 font-medium text-white transition-colors hover:bg-[oklch(0.6085_0.1061_160.41)]"
+      className="bg-kratka-green hover:bg-kratka-green-dark w-full rounded-lg px-4 py-2 font-medium text-white transition-colors"
     >
       <span className="flex items-center gap-2">
         {icon}

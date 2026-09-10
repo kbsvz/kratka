@@ -13,24 +13,22 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { usePatternList } from "@/components/hooks/usePatternList";
-import { formatRelativeTime } from "@/lib/utils";
+import { formatRelativeTime, cn } from "@/lib/utils";
 import type { PatternListItem } from "@/types";
 
 const fieldClass =
-  "border-stone-300 bg-white text-stone-800 placeholder:text-stone-400 focus-visible:ring-[oklch(0.5485_0.1061_160.41)]";
-const labelClass = "mb-1 text-stone-700";
+  "border-kratka-border bg-white text-kratka-ink placeholder:text-kratka-muted focus-visible:ring-kratka-green";
+const labelClass = "mb-1 text-kratka-muted";
 
 const CAP = 3;
 
 /**
- * Owns everything dashboard.astro renders below the welcome block: the
- * pattern table, the cap-boundary section (create form vs. cap message), and
- * the sign-out button. The cap boundary is driven by the live `patterns`
- * list from `usePatternList`, so a delete immediately un-hides the create
- * form without a page reload (see plan.md's Critical Implementation
- * Details). Sign-out lives here (not in dashboard.astro) so it can be hidden
- * once `sessionExpired` is true — showing "Sign out" for a session that's
- * already gone is misleading.
+ * Owns everything patterns.astro renders below the header: the heading and
+ * pattern-slot indicator, the pattern table, and the cap-boundary section
+ * (create form vs. cap message). The cap boundary and slot indicator are
+ * both driven by the live `patterns` list from `usePatternList`, so a
+ * delete immediately un-hides the create form and updates the slot count
+ * without a page reload (see plan.md's Critical Implementation Details).
  */
 export default function PatternDashboard({
   initialPatterns,
@@ -44,103 +42,147 @@ export default function PatternDashboard({
   const atCap = patterns.length >= CAP;
 
   return (
-    <div className="mt-6 w-full text-left">
-      {atCap ? (
-        <p className="mb-6 text-sm text-stone-500">
-          You&apos;ve reached the 3-pattern limit. Delete a pattern to create another.
-        </p>
-      ) : (
-        <form
-          method="POST"
-          action="/api/patterns"
-          className="mb-6 w-fit space-y-4 rounded-lg border border-stone-200 bg-white/70 p-4"
-        >
-          <h2 className="text-lg font-semibold text-stone-800">New pattern</h2>
-          <div className="flex items-end gap-4">
-            <div className="w-[200px]">
-              <Label htmlFor="width" className={labelClass}>
-                Width (20-100)
-              </Label>
-              <Input
-                id="width"
-                name="width"
-                type="number"
-                min="20"
-                max="100"
-                step="1"
-                required
-                defaultValue="50"
-                className={fieldClass}
-              />
-            </div>
-            <div className="w-[200px]">
-              <Label htmlFor="height" className={labelClass}>
-                Height (20-100)
-              </Label>
-              <Input
-                id="height"
-                name="height"
-                type="number"
-                min="20"
-                max="100"
-                step="1"
-                required
-                defaultValue="50"
-                className={fieldClass}
-              />
-            </div>
-            <Button
-              type="submit"
-              className="bg-[oklch(0.5485_0.1061_160.41)] text-white hover:bg-[oklch(0.6085_0.1061_160.41)]"
-            >
-              Create pattern
-            </Button>
-          </div>
-          {createError && <p className="text-sm text-red-700">{createError}</p>}
-        </form>
-      )}
+    <div className="w-full text-left">
+      <h1 className="text-kratka-ink mb-8 text-3xl font-bold tracking-tight">My Patterns</h1>
 
-      <h2 className="mb-2 text-lg font-semibold text-stone-800">My Patterns</h2>
+      <div className="border-kratka-border bg-kratka-paper mb-8 rounded-lg border p-4">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-kratka-ink text-sm font-semibold">New pattern</span>
+          <div
+            className="text-kratka-muted flex items-center gap-2 text-sm"
+            aria-label={`${patterns.length} of ${CAP} pattern slots used`}
+          >
+            <span className="flex gap-1">
+              {Array.from({ length: CAP }, (_, i) => (
+                <span
+                  key={i}
+                  className={cn("size-2 rounded-full", i < patterns.length ? "bg-kratka-green" : "bg-kratka-border")}
+                />
+              ))}
+            </span>
+            {patterns.length} of {CAP} patterns
+          </div>
+        </div>
+        <div className="mt-4">
+          {atCap ? (
+            <p className="text-kratka-muted text-sm">
+              You&apos;ve reached the 3-pattern limit. Delete a pattern to create another.
+            </p>
+          ) : (
+            <form method="POST" action="/api/patterns" className="flex flex-wrap items-end gap-4">
+              <div className="w-[140px]">
+                <Label htmlFor="width" className={labelClass}>
+                  Width (20-100)
+                </Label>
+                <Input
+                  id="width"
+                  name="width"
+                  type="number"
+                  min="20"
+                  max="100"
+                  step="1"
+                  required
+                  defaultValue="50"
+                  className={fieldClass}
+                />
+              </div>
+              <div className="w-[140px]">
+                <Label htmlFor="height" className={labelClass}>
+                  Height (20-100)
+                </Label>
+                <Input
+                  id="height"
+                  name="height"
+                  type="number"
+                  min="20"
+                  max="100"
+                  step="1"
+                  required
+                  defaultValue="50"
+                  className={fieldClass}
+                />
+              </div>
+              <Button type="submit" className="bg-kratka-green hover:bg-kratka-green-dark text-white">
+                Create
+              </Button>
+              {createError && <p className="w-full text-sm text-red-700">{createError}</p>}
+            </form>
+          )}
+        </div>
+      </div>
+
+      <div className="text-kratka-green mb-8 flex justify-center" aria-hidden="true">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="92"
+          height="12"
+          viewBox="0 0 92 12"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        >
+          <path d="M2 2L10 10M10 2L2 10"></path>
+          <path d="M12 2L20 10M20 2L12 10"></path>
+          <path d="M22 2L30 10M30 2L22 10"></path>
+          <path d="M32 2L40 10M40 2L32 10"></path>
+          <path d="M42 2L50 10M50 2L42 10"></path>
+          <path d="M52 2L60 10M60 2L52 10"></path>
+          <path d="M62 2L70 10M70 2L62 10"></path>
+          <path d="M72 2L80 10M80 2L72 10"></path>
+          <path d="M82 2L90 10M90 2L82 10"></path>
+        </svg>
+      </div>
+
       {patterns.length === 0 ? (
-        <p className="text-sm text-stone-500">No patterns yet — create your first one above.</p>
+        <p className="text-kratka-muted text-sm">No patterns yet — create your first one above.</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead>Last updated</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {patterns.map((pattern) => (
-              <TableRow key={pattern.id}>
-                <TableCell>
-                  <a href={`/editor/${pattern.id}`} className="text-[oklch(0.5485_0.1061_160.41)] hover:underline">
-                    {pattern.name}
-                  </a>
-                </TableCell>
-                <TableCell>
-                  {pattern.width}×{pattern.height}
-                </TableCell>
-                <TableCell>{formatRelativeTime(pattern.updated_at)}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={sessionExpired}
-                    onClick={() => {
-                      requestDelete(pattern.id);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <>
+          <div className="border-kratka-border bg-kratka-paper overflow-hidden rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Pattern</TableHead>
+                  <TableHead>Grid size</TableHead>
+                  <TableHead>Last updated</TableHead>
+                  <TableHead aria-label="Delete" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {patterns.map((pattern) => (
+                  <TableRow key={pattern.id}>
+                    <TableCell>
+                      <a
+                        href={`/editor/${pattern.id}`}
+                        title="Click to open"
+                        aria-label={pattern.name}
+                        className="text-kratka-green font-medium hover:underline"
+                      >
+                        {pattern.name}
+                      </a>
+                    </TableCell>
+                    <TableCell className="text-kratka-muted">
+                      {pattern.width}×{pattern.height}
+                    </TableCell>
+                    <TableCell className="text-kratka-muted">{formatRelativeTime(pattern.updated_at)}</TableCell>
+                    <TableCell className="text-right">
+                      <button
+                        type="button"
+                        disabled={sessionExpired}
+                        onClick={() => {
+                          requestDelete(pattern.id);
+                        }}
+                        className="text-kratka-red text-sm font-normal hover:underline disabled:opacity-40"
+                      >
+                        Delete
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
       {deleteError && (
         <div className="mt-2 flex items-center gap-3">
@@ -151,18 +193,6 @@ export default function PatternDashboard({
             </Button>
           )}
         </div>
-      )}
-
-      {!sessionExpired && (
-        <form method="POST" action="/api/auth/signout" className="mt-6">
-          <Button
-            type="submit"
-            variant="outline"
-            className="border-stone-300 bg-white text-stone-800 hover:bg-stone-100"
-          >
-            Sign out
-          </Button>
-        </form>
       )}
 
       <AlertDialog open={pendingDeleteId !== null}>

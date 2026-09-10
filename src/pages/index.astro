@@ -14,7 +14,7 @@ const { user } = Astro.locals;
 const showLanding = !user || Astro.url.searchParams.has("home");
 if (!showLanding) {
   Astro.response.status = 302;
-  Astro.response.headers.set("Location", "/dashboard");
+  Astro.response.headers.set("Location", "/patterns");
 }
 ---
 

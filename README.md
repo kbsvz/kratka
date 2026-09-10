@@ -148,7 +148,7 @@ Email/password via Supabase Auth, with cookie-based sessions handled by `@supaba
 | `/auth/signin`        | Sign-in form       |
 | `/auth/signup`        | Sign-up form       |
 | `/auth/confirm-email` | Post-signup notice |
-| `/dashboard`          | Protected page     |
+| `/patterns`           | Protected page     |
 
 `src/middleware.ts` resolves the current user on every request onto `context.locals.user` and
 guards anything listed in `PROTECTED_ROUTES`, adding `Cache-Control: private, no-store`. Add new
