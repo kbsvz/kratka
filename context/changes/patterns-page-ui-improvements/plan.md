@@ -517,12 +517,12 @@ Not applicable — no data model or schema changes.
 
 #### Automated
 
-- [x] 4.1 Type checking passes: `npx astro check`
-- [x] 4.2 Linting passes: `npm run lint`
-- [x] 4.3 Build succeeds: `npm run build`
+- [x] 4.1 Type checking passes: `npx astro check` — f3d9384
+- [x] 4.2 Linting passes: `npm run lint` — f3d9384
+- [x] 4.3 Build succeeds: `npm run build` — f3d9384
 
 #### Manual
 
-- [x] 4.4 Grid visually matches `pattern-editor-page.html` mockup
-- [x] 4.5 Paint/erase on a large grid still redraws incrementally, no flicker or full-grid repaint
-- [x] 4.6 Full page matches the mockup's color palette end-to-end
+- [x] 4.4 Grid visually matches `pattern-editor-page.html` mockup — f3d9384
+- [x] 4.5 Paint/erase on a large grid still redraws incrementally, no flicker or full-grid repaint — f3d9384
+- [x] 4.6 Full page matches the mockup's color palette end-to-end — f3d9384
