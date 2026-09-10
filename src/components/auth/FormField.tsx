@@ -50,7 +50,7 @@ export function FormField({
           placeholder={placeholder}
           className={cn(
             inputBase,
-            error ? "border-red-400 focus:ring-red-400" : "border-stone-300 focus:ring-[oklch(0.5485_0.1061_160.41)]",
+            error ? "border-red-400 focus:ring-red-400" : "focus:ring-kratka-green border-stone-300",
           )}
         />
         {endContent}

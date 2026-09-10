@@ -257,7 +257,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
         <Button
           variant="outline"
           onClick={() => {
-            attemptNavigate(() => (window.location.href = "/dashboard"));
+            attemptNavigate(() => (window.location.href = "/patterns"));
           }}
           className="border-stone-300 bg-white text-stone-800 hover:bg-stone-100"
         >
@@ -266,7 +266,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
         <Button
           onClick={save}
           disabled={!isDirty || isSaving}
-          className="bg-[oklch(0.5485_0.1061_160.41)] text-white hover:bg-[oklch(0.6085_0.1061_160.41)] disabled:opacity-40"
+          className="bg-kratka-green hover:bg-kratka-green-dark text-white disabled:opacity-40"
         >
           {isSaving ? "Saving…" : "Save"}
         </Button>

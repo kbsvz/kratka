@@ -1,7 +1,7 @@
 ---
 change_id: patterns-page-ui-improvements
 title: Patterns page ui improvements
-status: plan_reviewed
+status: implementing
 created: 2026-09-10
 updated: 2026-09-10
 archived_at: null

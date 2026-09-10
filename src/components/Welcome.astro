@@ -24,7 +24,7 @@ const { isSignedIn = false } = Astro.props;
           stroke="currentColor"
           stroke-width="1.5"
           stroke-linecap="round"
-          class="mb-4 text-[oklch(0.5485_0.1061_160.41)]"
+          class="text-kratka-green mb-4"
         >
           <path d="M2 2L10 10M10 2L2 10"></path>
           <path d="M12 2L20 10M20 2L12 10"></path>
@@ -47,7 +47,7 @@ const { isSignedIn = false } = Astro.props;
           stroke="currentColor"
           stroke-width="1.5"
           stroke-linecap="round"
-          class="mb-4 text-[oklch(0.5485_0.1061_160.41)]"
+          class="text-kratka-green mb-4"
         >
           <path d="M2 2L10 10M10 2L2 10"></path>
           <path d="M2 12L10 20M10 12L2 20"></path>
@@ -69,7 +69,7 @@ const { isSignedIn = false } = Astro.props;
           stroke="currentColor"
           stroke-width="1.5"
           stroke-linecap="round"
-          class="mb-4 text-[oklch(0.5485_0.1061_160.41)]"
+          class="text-kratka-green mb-4"
         >
           <path d="M2 2L10 10M10 2L2 10"></path>
           <path d="M12 12L20 20M20 12L12 20"></path>
@@ -90,10 +90,10 @@ const { isSignedIn = false } = Astro.props;
           isSignedIn ? (
             <>
               <a
-                href="/dashboard"
-                class="inline-flex items-center justify-center rounded-lg bg-[oklch(0.5485_0.1061_160.41)] px-6 py-3 text-base font-medium text-white transition-colors hover:bg-[oklch(0.6085_0.1061_160.41)]"
+                href="/patterns"
+                class="bg-kratka-green hover:bg-kratka-green-dark inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-medium text-white transition-colors"
               >
-                Go to dashboard
+                Go to My Patterns
               </a>
               <form method="POST" action="/api/auth/signout">
                 <button
@@ -108,7 +108,7 @@ const { isSignedIn = false } = Astro.props;
             <>
               <a
                 href="/auth/signin"
-                class="inline-flex items-center justify-center rounded-lg bg-[oklch(0.5485_0.1061_160.41)] px-6 py-3 text-base font-medium text-white transition-colors hover:bg-[oklch(0.6085_0.1061_160.41)]"
+                class="bg-kratka-green hover:bg-kratka-green-dark inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-medium text-white transition-colors"
               >
                 Sign In
               </a>
