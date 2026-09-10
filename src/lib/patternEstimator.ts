@@ -1,7 +1,7 @@
 import type { PatternGrid, PatternPalette } from "@/types";
 
-/** Business Logic constants (PRD, fixed defaults, not user-configurable). */
-const CM_PER_STITCH = 45;
+/** Business Logic constants (fixed defaults, not user-configurable). */
+const MM_PER_STITCH = 7;
 const STITCHES_PER_HOUR = 150;
 
 export interface PatternColorEstimate {
@@ -29,15 +29,25 @@ export function estimatePattern(grid: PatternGrid, palette: PatternPalette): Pat
   }
 
   const colors = palette
-    .map((hex, i) => ({
-      hex,
-      cellCount: cellCounts[i] ?? 0,
-      threadCm: (cellCounts[i] ?? 0) * CM_PER_STITCH,
-    }))
+    .map((hex, i) => {
+      const cellCount = cellCounts[i] ?? 0;
+      const threadMm = MM_PER_STITCH * cellCount;
+      return { hex, cellCount, threadCm: threadMm / 10 };
+    })
     .filter((color) => color.cellCount > 0);
 
   const totalFilledCells = cellCounts.reduce((sum: number, count: number) => sum + count, 0);
   const totalHours = totalFilledCells / STITCHES_PER_HOUR;
 
   return { colors, totalFilledCells, totalHours };
+}
+
+/** Formats a decimal hours value as a human-readable duration, e.g. `1h 15min`. */
+export function formatDuration(hours: number): string {
+  const totalMinutes = Math.round(hours * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h === 0) return `${m}min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}min`;
 }

@@ -142,18 +142,18 @@ export default function PatternDashboard({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Pattern</TableHead>
+                  <TableHead className="pl-4">Pattern</TableHead>
                   <TableHead>Grid size</TableHead>
                   <TableHead>Last updated</TableHead>
-                  <TableHead aria-label="Delete" />
+                  <TableHead aria-label="Delete" className="pr-4" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {patterns.map((pattern) => (
                   <TableRow key={pattern.id}>
-                    <TableCell>
+                    <TableCell className="pl-4">
                       <a
-                        href={`/editor/${pattern.id}`}
+                        href={`/patterns/${pattern.id}`}
                         title="Click to open"
                         aria-label={pattern.name}
                         className="text-kratka-green font-medium hover:underline"
@@ -165,7 +165,13 @@ export default function PatternDashboard({
                       {pattern.width}×{pattern.height}
                     </TableCell>
                     <TableCell className="text-kratka-muted">{formatRelativeTime(pattern.updated_at)}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="pr-4 text-right">
+                      <a
+                        href={`/patterns/${pattern.id}/print`}
+                        className="text-kratka-green mr-6 text-sm font-normal hover:underline"
+                      >
+                        Print
+                      </a>
                       <button
                         type="button"
                         disabled={sessionExpired}

@@ -3,7 +3,7 @@ project: "kratka"
 version: 2
 status: draft
 created: 2026-06-12
-updated: 2026-08-30
+updated: 2026-09-10
 context_type: greenfield
 product_type: web-app
 target_scale:
@@ -172,18 +172,20 @@ co-equal MVP persona.
 ## Business Logic
 
 Given a completed grid pattern, kratka computes — per palette color — the thread length
-required (the count of cells using that color × a fixed length-per-stitch) and the pattern's
+required (a fixed length-per-stitch × the count of cells using that color) and the pattern's
 total completion time (total filled cells ÷ a fixed stitches-per-hour rate), and presents both
 on the printable pattern.
 
 The rule consumes two user-facing inputs: the drawn grid (which cells are filled with which
 palette color) and the palette itself. Its outputs are a per-color thread-length figure and a
-single total time estimate. In the MVP the two rate constants are fixed defaults — 45 cm of
-thread per stitch and 150 stitches per hour — not user-configurable (per-pattern
-configurability is post-MVP). The user encounters the result on the color print view: the
-palette legend lists each color with its thread length, and a footer shows the total time
-estimate. A lighter live per-color cell count also appears in the editor while drawing, but the
-thread/time computation itself surfaces only on the printout.
+single total time estimate. In the MVP the rate constants are fixed defaults — 7 mm of thread
+per stitch (thread length in mm = 7 × cell count, converted to cm) and 150 stitches per hour —
+not user-configurable (per-pattern configurability is post-MVP). The total time is presented as
+a human-readable duration (e.g. "1h 15min"). The user encounters the result on the color print
+view: the palette legend lists each color with its thread length, and a footer shows the total
+time estimate. A lighter live
+per-color cell count also appears in the editor while drawing, but the thread/time computation
+itself surfaces only on the printout.
 
 ## Access Control
 

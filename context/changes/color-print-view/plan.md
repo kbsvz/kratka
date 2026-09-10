@@ -229,6 +229,80 @@ Delete's `text-kratka-red`) as a sibling in the same `TableCell`, placed before 
 (e.g. "Print · Delete"). No new table column — this keeps the row-action column's shape as shipped
 by the redesign.
 
+#### 3. Editor entry point (added during implementation, user-requested)
+
+**File**: `src/components/editor/PatternEditor.tsx` (action row)
+
+**Intent**: The dashboard link alone left no way to reach the print view from inside the editor —
+a user actively working on a pattern had to navigate back to My Patterns first. Add a second entry
+point directly in the editor's action row.
+
+**Contract**: A "Print" text link (`text-kratka-green text-sm font-normal hover:underline`) in the
+action row next to Save, guarded the same way the breadcrumb's "My Patterns" link is guarded —
+`attemptNavigate(() => (window.location.href = `/patterns/${pattern.id}/print`))` from
+`useUnsavedChangesGuard` — since navigating away to print mid-edit would otherwise silently lose
+unsaved paint work.
+
+#### 4. Visual and formula polish (added during implementation, user-requested)
+
+**Files**: `src/components/patterns/PatternDashboard.tsx`, `src/pages/patterns/[id]/print.astro`,
+`src/lib/patternEstimator.ts`
+
+**Intent**: Small fixes from manual review of Phase 1/2:
+1. Saved-patterns table's left/right cell padding (`pl-4`/`pr-4` on the first/last column) now
+   matches the New-pattern card's `p-4`, which the shadcn `Table` component's default `px-2` cells
+   didn't.
+2. Spacing between the dashboard's "Print" and "Delete" links widened (`mr-3` → `mr-6`).
+3. The print view's "Legend" section heading removed (redundant given the page's own title).
+4. The print view's legend no longer shows each color's hex code — thread length only.
+5. **Thread-length formula changed** from the PRD's documented `cellCount × 45cm` to
+   `7mm × cellCount` per color (converted to cm) — see the divergence note below. An intermediate
+   version of this change added a fixed `+120mm` thread-end allowance per color; that allowance
+   was explicitly dropped per follow-up user instruction, so the final formula is the simple
+   linear one.
+6. Total time now renders as a human-readable duration (`formatDuration`, e.g. `1h 15min`)
+   instead of raw decimal hours.
+7. A "Close" link/button added to the print page's footer, on the same line as the estimated-time
+   text. Initially navigated back to `/patterns` (My Patterns); per follow-up user instruction it
+   now navigates back to the pattern's own editor page (`/patterns/${pattern.id}`) instead.
+8. Each legend row's thread length is rounded up to the next whole cm (`Math.ceil`) rather than
+   shown to one decimal place.
+9. The border line above the "Estimated time" footer removed (`border-t border-stone-200 pt-4`
+   dropped), per follow-up user instruction — the `mt-6` top margin already separates it from the
+   legend above.
+
+**Contract**: `estimatePattern`'s exported shape is unchanged (`colors`, `totalFilledCells`,
+`totalHours` still all present) — only the internal formula and a new `formatDuration` export are
+added, so nothing else calling this module needs to change.
+
+> **Business logic divergence from the PRD (resolved)**: `context/foundation/prd.md`'s Business
+> Logic section originally documented the thread-length formula as `cellCount × 45cm (fixed
+> length-per-stitch)`. This implementation uses `7mm × cellCount` per color instead (converted to
+> cm), per explicit user instruction during implementation. Per `lessons.md` L-02's "docs go stale
+> silently" pattern, `prd.md`'s Business Logic section was updated in the same session to match
+> the shipped formula (and to document the human-readable duration format).
+
+#### 5. Route rename: `/editor/[id]` → `/patterns/[id]` (added during implementation, user-requested)
+
+**Files**: `src/pages/editor/[id].astro` → `src/pages/patterns/[id].astro`, `src/middleware.ts`,
+`src/components/patterns/PatternDashboard.tsx`, `src/pages/api/patterns/index.ts`,
+`context/foundation/roadmap.md`
+
+**Intent**: Unify the pattern-editor URL with the already-`/patterns`-prefixed API and print
+routes, so all three surfaces for a given pattern id (`/api/patterns/[id]`, `/patterns/[id]`,
+`/patterns/[id]/print`) share one path prefix instead of the editor being the sole holdout at
+`/editor/[id]`.
+
+**Contract**: The page file moves (via `git mv`) from `src/pages/editor/[id].astro` to
+`src/pages/patterns/[id].astro` — it coexists with the already-existing `src/pages/patterns.astro`
+(list) and `src/pages/patterns/[id]/print.astro` without route collision, since Astro resolves
+exact static/dynamic segments independently. Every `/editor/${...}` reference is updated to
+`/patterns/${...}`: the dashboard's pattern-name link, the create-pattern API's success redirect,
+and the moved file's own not-found comment. `PROTECTED_ROUTES` in `middleware.ts` drops the now-
+redundant `"/editor"` entry (the existing `"/patterns"` entry's `startsWith` match already covers
+the relocated route). `roadmap.md`'s S-01 Unknowns section (a historical decision record) is
+updated to note the rename rather than left asserting the old path.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -245,6 +319,12 @@ by the redesign.
   (100×100) test pattern, without manual scaling.
 - The dashboard's Actions column shows a working "Print" link for each pattern that navigates to its
   print view.
+- The editor's action row shows a working "Print" link; with unsaved changes, clicking it shows the
+  same custom discard-changes confirm dialog as the breadcrumb link, not a silent navigation.
+- The print page's "Close" link navigates back to the pattern's own editor page
+  (`/patterns/<id>`), not the My Patterns list.
+- The old `/editor/<id>` URL 404s; `/patterns/<id>` opens the editor; creating a pattern redirects
+  to `/patterns/<id>`.
 - Regression check: dashboard list and delete (S-02) and editor open/save/reopen (S-01) still work
   unaffected.
 
@@ -306,30 +386,33 @@ None — no schema or data changes.
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npx astro check`
-- [x] 1.2 Linting passes: `npm run lint`
-- [x] 1.3 Build succeeds: `npm run build`
+- [x] 1.1 Type checking passes: `npx astro check` — 3bba900
+- [x] 1.2 Linting passes: `npm run lint` — 3bba900
+- [x] 1.3 Build succeeds: `npm run build` — 3bba900
 
 #### Manual
 
-- [x] 1.4 Known test pattern's legend thread lengths and footer time match hand-calculated values
-- [x] 1.5 Not-owned/nonexistent id redirects to /patterns; malformed id 404s
+- [x] 1.4 Known test pattern's legend thread lengths and footer time match hand-calculated values — 3bba900
+- [x] 1.5 Not-owned/nonexistent id redirects to /patterns; malformed id 404s — 3bba900
 - [x] 1.6 Never-painted pattern (grid.length === 0) renders blank grid with empty legend, zero time,
-      no error
+      no error — 3bba900
 - [x] 1.7 Heavy gridlines/edge numbers appear every 10th row/column, including correct partial
-      trailing block
+      trailing block — 3bba900
 
 ### Phase 2: Print polish and dashboard entry point
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npx astro check`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Build succeeds: `npm run build`
+- [x] 2.1 Type checking passes: `npx astro check`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Build succeeds: `npm run build`
 
 #### Manual
 
 - [ ] 2.4 Print preview shows only grid/legend/footer, no app chrome, colors visible
 - [ ] 2.5 Grid fits one page width in print preview for both 20×20 and 100×100 test patterns
-- [ ] 2.6 Dashboard Actions column shows a working Print link per pattern
-- [ ] 2.7 Regression check: dashboard list/delete and editor open/save/reopen still work
+- [x] 2.6 Dashboard Actions column shows a working Print link per pattern
+- [x] 2.7 Editor action row shows a working Print link, guarded by the unsaved-changes dialog
+- [x] 2.8 Print page's Close link navigates back to the pattern's editor page (/patterns/<id>)
+- [x] 2.9 Old /editor/<id> 404s; /patterns/<id> opens the editor; create redirects to /patterns/<id>
+- [x] 2.10 Regression check: dashboard list/delete and editor open/save/reopen still work

@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
-import { estimatePattern } from "@/lib/patternEstimator";
+import { estimatePattern, formatDuration } from "@/lib/patternEstimator";
 import type { PatternEditorData, PatternGrid, PatternPalette } from "@/types";
 
 const { id } = Astro.params;
@@ -48,6 +48,12 @@ const EDGE_LABEL_SPACE = 24; // CSS px reserved for the edge-number gutter.
 const svgWidth = pattern ? pattern.width * CELL_UNIT + EDGE_LABEL_SPACE * 2 : 0;
 const svgHeight = pattern ? pattern.height * CELL_UNIT + EDGE_LABEL_SPACE * 2 : 0;
 
+// Caps each cell at 5mm both on screen and when printed, so the preview matches
+// the printed output exactly — computed from the full SVG width (grid +
+// edge-label gutter) so the gutter scales with it, not just the grid itself.
+const MAX_CELL_MM = 5;
+const maxPrintWidthMm = pattern ? (svgWidth / CELL_UNIT) * MAX_CELL_MM : 0;
+
 const isHeavy = (n: number, max: number) => n % HEAVY_LINE_EVERY === 0 || n === max;
 
 const filledCells = pattern
@@ -81,20 +87,21 @@ const leftLabels = pattern
 
 {
   pattern && estimate && (
-    <Layout title={`Print — ${pattern.name}`}>
+    <Layout title={`Pattern — ${pattern.name}`}>
       <div class="mx-auto max-w-4xl p-6">
         <div class="mb-4 flex items-center justify-between">
           <h1 class="text-xl font-bold">{pattern.name}</h1>
           <button
             id="print-button"
             type="button"
-            class="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100"
+            class="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100 print:hidden"
           >
             Print
           </button>
         </div>
 
         <svg
+          id="pattern-grid-svg"
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           style="width: 100%; height: auto;"
           xmlns="http://www.w3.org/2000/svg"
@@ -156,27 +163,31 @@ const leftLabels = pattern
         </svg>
 
         <section class="mt-6">
-          <h2 class="mb-2 text-lg font-semibold">Legend</h2>
           {estimate.colors.length === 0 ? (
             <p class="text-sm text-stone-500">No colors used yet.</p>
           ) : (
-            <ul class="space-y-1">
+            <ul class="grid grid-cols-5 gap-x-4 gap-y-2">
               {estimate.colors.map((color) => (
                 <li class="flex items-center gap-3 text-sm">
                   <span
                     class="inline-block size-4 shrink-0 rounded-full border border-stone-300"
                     style={`background-color: ${color.hex}`}
                   />
-                  <span class="w-20 font-mono text-stone-600">{color.hex}</span>
-                  <span>{color.threadCm} cm</span>
+                  <span>{Math.ceil(color.threadCm)} cm</span>
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <footer class="mt-6 border-t border-stone-200 pt-4 text-sm font-medium">
-          Estimated time: {estimate.totalHours.toFixed(2)} hours
+        <footer class="mt-6 flex items-center justify-between text-sm font-medium">
+          <span>Estimated time: ~{formatDuration(estimate.totalHours)}</span>
+          <a
+            href={`/patterns/${pattern.id}`}
+            class="rounded-lg border border-stone-300 bg-white px-4 py-2 font-medium hover:bg-stone-100 print:hidden"
+          >
+            Close
+          </a>
         </footer>
       </div>
     </Layout>
@@ -188,3 +199,29 @@ const leftLabels = pattern
     window.print();
   });
 </script>
+
+<style define:vars={{ maxPrintWidthMm: `${maxPrintWidthMm}mm` }}>
+  /* Caps each grid cell at 5mm both on screen and on paper, so the preview
+     matches the printed output — active in both media, not just @media print. */
+  :global(#pattern-grid-svg) {
+    max-width: var(--maxPrintWidthMm);
+  }
+
+  @media print {
+    :global(html),
+    :global(body) {
+      margin: 0;
+    }
+    /* Config-missing banner from Layout.astro, in the unlikely case it renders. */
+    :global(.banner) {
+      display: none;
+    }
+    :global(*) {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    @page {
+      margin: 1cm;
+    }
+  }
+</style>

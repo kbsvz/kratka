@@ -48,5 +48,5 @@ export const POST: APIRoute = async (context) => {
     return context.redirect(`/patterns?error=${encodeURIComponent(message)}`);
   }
 
-  return context.redirect(`/editor/${data.id}`);
+  return context.redirect(`/patterns/${data.id}`);
 };
