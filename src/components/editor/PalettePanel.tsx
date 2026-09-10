@@ -122,7 +122,7 @@ export default function PalettePanel({
               type="button"
               aria-label="Discard new color"
               onClick={cancelPendingColor}
-              className="flex size-6 items-center justify-center rounded-full bg-stone-300 text-stone-700"
+              className="bg-kratka-border text-kratka-ink flex size-6 items-center justify-center rounded-full"
             >
               <X className="size-3.5" />
             </button>
@@ -134,7 +134,7 @@ export default function PalettePanel({
                 type="button"
                 aria-label="Add a color"
                 onClick={openPicker}
-                className="text-kratka-muted flex size-8 items-center justify-center rounded-full border-2 border-dashed border-stone-300 text-lg leading-none hover:border-stone-400"
+                className="text-kratka-muted hover:border-kratka-muted border-kratka-border flex size-8 items-center justify-center rounded-full border-2 border-dashed text-lg leading-none"
               >
                 +
               </button>

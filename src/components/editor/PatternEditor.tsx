@@ -67,7 +67,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
       // would compound darker with every overdraw (visible as lines
       // getting "bolder" the more you paint). Opaque colors make every
       // redraw idempotent regardless of how many times it happens.
-      ctx.strokeStyle = heavy ? "#777777" : "#dddddd";
+      ctx.strokeStyle = heavy ? "#817b75" : "#dfdad4";
       // Odd widths (1px) need a half-pixel center to land crisply on the
       // pixel grid; even widths (2px) need a whole-pixel center instead.
       // Getting this wrong leaves the line at a fractional pixel offset,
@@ -87,7 +87,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
   const strokeRow = useCallback(
     (ctx: CanvasRenderingContext2D, row: number) => {
       const heavy = isHeavyRow(row);
-      ctx.strokeStyle = heavy ? "#777777" : "#dddddd";
+      ctx.strokeStyle = heavy ? "#817b75" : "#dfdad4";
       ctx.lineWidth = heavy ? 2 : 1;
       const y = heavy ? Math.round(row * CELL_SIZE) : Math.round(row * CELL_SIZE) + 0.5;
       ctx.beginPath();
@@ -124,7 +124,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
     for (let row = 0; row <= pattern.height; row++) strokeRow(ctx, row);
     ctx.restore();
 
-    ctx.fillStyle = "#000000cc";
+    ctx.fillStyle = "#24201ecc";
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -234,7 +234,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
 
   return (
     <div className="bg-kratka-bg text-kratka-ink min-h-screen">
-      <main className="mx-auto max-w-[1180px] px-7 py-8">
+      <main className="px-7 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="text-[1.75rem]">
             <a
@@ -243,12 +243,12 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
                 event.preventDefault();
                 attemptNavigate(() => (window.location.href = "/patterns"));
               }}
-              className="text-kratka-green font-bold hover:underline"
+              className="text-kratka-green font-normal hover:underline"
             >
               My Patterns
             </a>{" "}
             <span className="text-kratka-muted">/</span>{" "}
-            <span className="text-kratka-ink font-bold">{pattern.name}</span>
+            <span className="text-kratka-ink font-normal">{pattern.name}</span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -275,7 +275,7 @@ export default function PatternEditor({ pattern }: { pattern: PatternEditorData 
             onSelectErase={selectErase}
           />
 
-          <div className="w-fit overflow-auto rounded border border-stone-300">
+          <div className="min-w-0 overflow-auto">
             <canvas
               ref={canvasRef}
               onPointerDown={handlePointerDown}

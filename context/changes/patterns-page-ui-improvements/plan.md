@@ -501,28 +501,28 @@ Not applicable — no data model or schema changes.
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npx astro check`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 Build succeeds: `npm run build`
+- [x] 3.1 Type checking passes: `npx astro check` — 874e526
+- [x] 3.2 Linting passes: `npm run lint` — 874e526
+- [x] 3.3 Build succeeds: `npm run build` — 874e526
 
 #### Manual
 
-- [ ] 3.4 Page structurally matches `pattern-editor-page.html` mockup
-- [ ] 3.5 Breadcrumb "My Patterns" link shows custom confirm dialog when dirty, navigates immediately when clean
-- [ ] 3.6 Sign-out from editor header works; native browser prompt appears when dirty
-- [ ] 3.7 Paint, erase, add-color, and the 30-color cap all still work exactly as before
-- [ ] 3.8 Save still works; "Unsaved changes" text tracks `isDirty` correctly
+- [x] 3.4 Page structurally matches `pattern-editor-page.html` mockup — 874e526
+- [x] 3.5 Breadcrumb "My Patterns" link shows custom confirm dialog when dirty, navigates immediately when clean — 874e526
+- [x] 3.6 Sign-out from editor header works; native browser prompt appears when dirty — 874e526
+- [x] 3.7 Paint, erase, add-color, and the 30-color cap all still work exactly as before — 874e526
+- [x] 3.8 Save still works; "Unsaved changes" text tracks `isDirty` correctly — 874e526
 
 ### Phase 4: Editor visual polish (canvas + remaining tokens)
 
 #### Automated
 
-- [ ] 4.1 Type checking passes: `npx astro check`
-- [ ] 4.2 Linting passes: `npm run lint`
-- [ ] 4.3 Build succeeds: `npm run build`
+- [x] 4.1 Type checking passes: `npx astro check`
+- [x] 4.2 Linting passes: `npm run lint`
+- [x] 4.3 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 4.4 Grid visually matches `pattern-editor-page.html` mockup
-- [ ] 4.5 Paint/erase on a large grid still redraws incrementally, no flicker or full-grid repaint
-- [ ] 4.6 Full page matches the mockup's color palette end-to-end
+- [x] 4.4 Grid visually matches `pattern-editor-page.html` mockup
+- [x] 4.5 Paint/erase on a large grid still redraws incrementally, no flicker or full-grid repaint
+- [x] 4.6 Full page matches the mockup's color palette end-to-end
