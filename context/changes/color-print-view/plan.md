@@ -306,17 +306,17 @@ None — no schema or data changes.
 
 #### Automated
 
-- [ ] 1.1 Type checking passes: `npx astro check`
-- [ ] 1.2 Linting passes: `npm run lint`
-- [ ] 1.3 Build succeeds: `npm run build`
+- [x] 1.1 Type checking passes: `npx astro check`
+- [x] 1.2 Linting passes: `npm run lint`
+- [x] 1.3 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 1.4 Known test pattern's legend thread lengths and footer time match hand-calculated values
-- [ ] 1.5 Not-owned/nonexistent id redirects to /patterns; malformed id 404s
-- [ ] 1.6 Never-painted pattern (grid.length === 0) renders blank grid with empty legend, zero time,
+- [x] 1.4 Known test pattern's legend thread lengths and footer time match hand-calculated values
+- [x] 1.5 Not-owned/nonexistent id redirects to /patterns; malformed id 404s
+- [x] 1.6 Never-painted pattern (grid.length === 0) renders blank grid with empty legend, zero time,
       no error
-- [ ] 1.7 Heavy gridlines/edge numbers appear every 10th row/column, including correct partial
+- [x] 1.7 Heavy gridlines/edge numbers appear every 10th row/column, including correct partial
       trailing block
 
 ### Phase 2: Print polish and dashboard entry point
