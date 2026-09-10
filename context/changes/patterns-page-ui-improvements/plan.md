@@ -468,34 +468,34 @@ Not applicable — no data model or schema changes.
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npx astro check`
-- [x] 1.2 Linting passes: `npm run lint`
-- [x] 1.3 Build succeeds: `npm run build`
-- [x] 1.4 No remaining references: `grep -rn "oklch(0.5485_0.1061_160.41)\|oklch(0.6085_0.1061_160.41)\|/dashboard" src README.md context/deployment/deploy-plan.md` returns nothing
+- [x] 1.1 Type checking passes: `npx astro check` — 3ed3510
+- [x] 1.2 Linting passes: `npm run lint` — 3ed3510
+- [x] 1.3 Build succeeds: `npm run build` — 3ed3510
+- [x] 1.4 No remaining references: `grep -rn "oklch(0.5485_0.1061_160.41)\|oklch(0.6085_0.1061_160.41)\|/dashboard" src README.md context/deployment/deploy-plan.md` returns nothing — 3ed3510
 
 #### Manual
 
-- [ ] 1.5 Visiting `/patterns` while signed in loads the page; `/dashboard` 404s
-- [ ] 1.6 Sign-in and sign-up redirect to `/patterns` after success
-- [ ] 1.7 Landing, sign-in, and sign-up pages render with the same green as before
-- [ ] 1.8 `README.md` and `context/deployment/deploy-plan.md` reference `/patterns`, not `/dashboard`
+- [x] 1.5 Visiting `/patterns` while signed in loads the page; `/dashboard` 404s — 3ed3510
+- [x] 1.6 Sign-in and sign-up redirect to `/patterns` after success — 3ed3510
+- [x] 1.7 Landing, sign-in, and sign-up pages render with the same green as before — 3ed3510
+- [x] 1.8 `README.md` and `context/deployment/deploy-plan.md` reference `/patterns`, not `/dashboard` — 3ed3510
 
 ### Phase 2: My Patterns page redesign
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npx astro check`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Build succeeds: `npm run build`
+- [x] 2.1 Type checking passes: `npx astro check`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 2.4 Page matches `my-patterns-page.html` mockup side-by-side
-- [ ] 2.5 Exactly one sign-out control appears on the page (in the header), not two
-- [ ] 2.6 Create pattern still works and redirects to the new pattern's editor
-- [ ] 2.7 Delete still shows confirm dialog, removes the row, un-hides create form below cap
-- [ ] 2.8 At the 3-pattern cap, the create form is replaced by the explanatory message
-- [ ] 2.9 Session-expired delete error still shows its own "Sign in" prompt
+- [x] 2.4 Page matches `my-patterns-page.html` mockup side-by-side
+- [x] 2.5 Exactly one sign-out control appears on the page (in the header), not two
+- [x] 2.6 Create pattern still works and redirects to the new pattern's editor
+- [x] 2.7 Delete still shows confirm dialog, removes the row, un-hides create form below cap
+- [x] 2.8 At the 3-pattern cap, the create form is replaced by the explanatory message
+- [x] 2.9 Session-expired delete error still shows its own "Sign in" prompt
 
 ### Phase 3: Editor structural redesign
 

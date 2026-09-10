@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
+import AppHeader from "@/components/AppHeader.astro";
 import PatternDashboard from "@/components/patterns/PatternDashboard";
 import type { PatternListItem } from "@/types";
 
@@ -21,18 +22,11 @@ const patterns: PatternListItem[] = data ?? [];
 const createError = Astro.url.searchParams.get("error") ?? undefined;
 ---
 
-<Layout title="Dashboard">
-  <div class="bg-cosmic relative flex min-h-screen items-center justify-center p-2">
-    <div class="absolute top-4 left-4">
-      <a href="/?home" class="text-xl font-bold text-stone-800 hover:opacity-80">KRATKA</a>
-    </div>
-
-    <div class="w-full max-w-6xl rounded-2xl border border-stone-200 bg-white/70 p-6 text-center text-stone-800">
-      <h1 class="mb-4 text-3xl font-bold text-stone-800">Dashboard</h1>
-      <p class="text-stone-600">
-        Welcome, <span class="font-semibold text-stone-800">{user?.email}</span>
-      </p>
+<Layout title="My Patterns">
+  <div class="bg-kratka-bg min-h-screen">
+    <AppHeader email={user?.email ?? ""} />
+    <main class="mx-auto max-w-5xl px-8 py-14">
       <PatternDashboard client:load initialPatterns={patterns} createError={createError} />
-    </div>
+    </main>
   </div>
 </Layout>
