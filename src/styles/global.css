@@ -5,6 +5,14 @@
 
 :root {
   --radius: 0.625rem;
+  --kratka-bg: #f6f1e9;
+  --kratka-paper: #fffcf7;
+  --kratka-ink: #24201e;
+  --kratka-muted: #716b65;
+  --kratka-border: #e4ddd3;
+  --kratka-green: #287d57;
+  --kratka-green-dark: #1f6948;
+  --kratka-red: #a3232b;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -73,6 +81,14 @@
 }
 
 @theme inline {
+  --color-kratka-bg: var(--kratka-bg);
+  --color-kratka-paper: var(--kratka-paper);
+  --color-kratka-ink: var(--kratka-ink);
+  --color-kratka-muted: var(--kratka-muted);
+  --color-kratka-border: var(--kratka-border);
+  --color-kratka-green: var(--kratka-green);
+  --color-kratka-green-dark: var(--kratka-green-dark);
+  --color-kratka-red: var(--kratka-red);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

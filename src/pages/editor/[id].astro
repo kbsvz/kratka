@@ -39,7 +39,7 @@ const pattern: PatternEditorData | null = data
 if (!pattern) {
   if (isWellFormedId) {
     Astro.response.status = 302;
-    Astro.response.headers.set("Location", "/dashboard");
+    Astro.response.headers.set("Location", "/patterns");
   } else {
     Astro.response.status = 404;
   }

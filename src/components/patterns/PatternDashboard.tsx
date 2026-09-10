@@ -17,7 +17,7 @@ import { formatRelativeTime } from "@/lib/utils";
 import type { PatternListItem } from "@/types";
 
 const fieldClass =
-  "border-stone-300 bg-white text-stone-800 placeholder:text-stone-400 focus-visible:ring-[oklch(0.5485_0.1061_160.41)]";
+  "border-stone-300 bg-white text-stone-800 placeholder:text-stone-400 focus-visible:ring-kratka-green";
 const labelClass = "mb-1 text-stone-700";
 
 const CAP = 3;
@@ -89,10 +89,7 @@ export default function PatternDashboard({
                 className={fieldClass}
               />
             </div>
-            <Button
-              type="submit"
-              className="bg-[oklch(0.5485_0.1061_160.41)] text-white hover:bg-[oklch(0.6085_0.1061_160.41)]"
-            >
+            <Button type="submit" className="bg-kratka-green hover:bg-kratka-green-dark text-white">
               Create pattern
             </Button>
           </div>
@@ -117,7 +114,7 @@ export default function PatternDashboard({
             {patterns.map((pattern) => (
               <TableRow key={pattern.id}>
                 <TableCell>
-                  <a href={`/editor/${pattern.id}`} className="text-[oklch(0.5485_0.1061_160.41)] hover:underline">
+                  <a href={`/editor/${pattern.id}`} className="text-kratka-green hover:underline">
                     {pattern.name}
                   </a>
                 </TableCell>

@@ -17,12 +17,12 @@ export const POST: APIRoute = async (context) => {
     height: form.get("height"),
   });
   if (!parsed.success) {
-    return context.redirect(`/dashboard?error=${encodeURIComponent("Width and height must be between 20 and 100.")}`);
+    return context.redirect(`/patterns?error=${encodeURIComponent("Width and height must be between 20 and 100.")}`);
   }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return context.redirect(`/dashboard?error=${encodeURIComponent("Supabase is not configured")}`);
+    return context.redirect(`/patterns?error=${encodeURIComponent("Supabase is not configured")}`);
   }
 
   // name/seq/slot are required by the generated Insert type but are always
@@ -45,7 +45,7 @@ export const POST: APIRoute = async (context) => {
     // the trigger's RAISE EXCEPTION can't silently break cap detection.
     const message =
       error.code === "KR001" ? "You already have 3 patterns. Delete one to create another." : error.message;
-    return context.redirect(`/dashboard?error=${encodeURIComponent(message)}`);
+    return context.redirect(`/patterns?error=${encodeURIComponent(message)}`);
   }
 
   return context.redirect(`/editor/${data.id}`);

@@ -468,10 +468,10 @@ Not applicable — no data model or schema changes.
 
 #### Automated
 
-- [ ] 1.1 Type checking passes: `npx astro check`
-- [ ] 1.2 Linting passes: `npm run lint`
-- [ ] 1.3 Build succeeds: `npm run build`
-- [ ] 1.4 No remaining references: `grep -rn "oklch(0.5485_0.1061_160.41)\|oklch(0.6085_0.1061_160.41)\|/dashboard" src README.md context/deployment/deploy-plan.md` returns nothing
+- [x] 1.1 Type checking passes: `npx astro check`
+- [x] 1.2 Linting passes: `npm run lint`
+- [x] 1.3 Build succeeds: `npm run build`
+- [x] 1.4 No remaining references: `grep -rn "oklch(0.5485_0.1061_160.41)\|oklch(0.6085_0.1061_160.41)\|/dashboard" src README.md context/deployment/deploy-plan.md` returns nothing
 
 #### Manual
 

@@ -61,7 +61,7 @@ export default function PalettePanel({
             onClick={onSelectErase}
             className={cn(
               "flex size-8 items-center justify-center rounded-full border-2 bg-white text-stone-600",
-              tool.type === "erase" ? "border-[oklch(0.5485_0.1061_160.41)]" : "border-stone-300",
+              tool.type === "erase" ? "border-kratka-green" : "border-stone-300",
             )}
           >
             <Eraser className="size-4" />
@@ -83,10 +83,7 @@ export default function PalettePanel({
                   onSelectColor(colorIndex);
                 }}
                 style={{ backgroundColor: hex }}
-                className={cn(
-                  "size-8 rounded-full border-2",
-                  selected ? "border-[oklch(0.5485_0.1061_160.41)]" : "border-stone-300",
-                )}
+                className={cn("size-8 rounded-full border-2", selected ? "border-kratka-green" : "border-stone-300")}
               />
               <span className="text-xs text-stone-600 tabular-nums">{counts.get(colorIndex) ?? 0}</span>
             </div>
@@ -104,7 +101,7 @@ export default function PalettePanel({
               type="button"
               aria-label="Confirm new color"
               onClick={confirmPendingColor}
-              className="flex size-6 items-center justify-center rounded-full bg-[oklch(0.5485_0.1061_160.41)] text-white"
+              className="bg-kratka-green flex size-6 items-center justify-center rounded-full text-white"
             >
               <Check className="size-3.5" />
             </button>
