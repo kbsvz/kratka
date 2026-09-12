@@ -345,7 +345,7 @@ Not applicable — no schema changes in this phase.
 
 #### Manual
 
-- [x] 1.4 Spot-check one hand-computed expected value against the PRD's stated constants by hand
+- [x] 1.4 Spot-check one hand-computed expected value against the PRD's stated constants by hand — 2bf32de
 
 ### Phase 2: Integration test harness + save/reload round-trip
 
