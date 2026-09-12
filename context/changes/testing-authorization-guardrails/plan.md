@@ -341,19 +341,19 @@ No schema changes. Phase 4's retry logic is application code only.
 
 #### Automated
 
-- [x] 2.1 New test file passes: `npx vitest run test/integration/patterns-authorization.test.ts`
-- [x] 2.2 Full suite passes: `npm test` (with `fileParallelism: false` in place)
-- [x] 2.3 Type checking passes: `npx astro check`
-- [x] 2.4 Linting passes: `npm run lint`
+- [x] 2.1 New test file passes: `npx vitest run test/integration/patterns-authorization.test.ts` — 2eee239
+- [x] 2.2 Full suite passes: `npm test` (with `fileParallelism: false` in place) — 2eee239
+- [x] 2.3 Type checking passes: `npx astro check` — 2eee239
+- [x] 2.4 Linting passes: `npm run lint` — 2eee239
 
 ### Phase 3: Risk #6 — soft-delete reachability tests
 
 #### Automated
 
-- [ ] 3.1 New test file passes: `npx vitest run test/integration/patterns-soft-delete.test.ts`
-- [ ] 3.2 Full suite passes: `npm test`
-- [ ] 3.3 Type checking passes: `npx astro check`
-- [ ] 3.4 Linting passes: `npm run lint`
+- [x] 3.1 New test file passes: `npx vitest run test/integration/patterns-soft-delete.test.ts`
+- [x] 3.2 Full suite passes: `npm test`
+- [x] 3.3 Type checking passes: `npx astro check`
+- [x] 3.4 Linting passes: `npm run lint`
 
 ### Phase 4: Risk #4 — concurrency fix + test
 
