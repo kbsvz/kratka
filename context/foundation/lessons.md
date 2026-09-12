@@ -75,3 +75,24 @@ diff <(extract-rows plan.md) <(extract-rows migration.sql)
 
 An empty result from both is the gate. A `unique` constraint on the seeded column is what turns a
 silent duplicate into a loud migration failure — keep one.
+
+---
+
+## L-04: A stale non-functional doc value gets a plain replace, not a correction narrative
+
+**Rule:** When a value in a doc (PRD, roadmap, plan, research) is wrong but purely descriptive —
+never read by code, no schema or decision hinges on it — just replace it wherever it's wrong. Don't
+narrate "corrected from X to Y", don't cite sources/dates for the fix, and don't treat it as a
+cross-document sync project by chasing every doc that mentions the old value.
+
+**Why:** On 2026-09-12, `roadmap.md` stated the thread-length constant as "45 cm/stitch" while the
+PRD and code both correctly used "7 mm/stitch" — a stale figure from an early draft that was never
+functionally wrong (code was always right). The correction got over-documented: `test-plan.md`,
+`research.md`, and `plan.md` all grew "roadmap says X but PRD/code says Y, confirmed by research on
+<date>" annotations for what was, in the end, a one-line typo.
+
+**How to apply:** For a non-functional documentation error (wrong stated constant, stale wording),
+do a plain find-and-replace in the place it's wrong and stop — no evidence trail, no backport to
+sibling docs unless they're independently wrong too. Reserve the backport-with-evidence ritual
+(e.g. `/10x-test-plan`'s post-research backport check) for corrections that change an actual
+strategy or decision, not cosmetic doc accuracy.

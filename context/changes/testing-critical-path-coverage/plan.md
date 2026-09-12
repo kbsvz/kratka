@@ -339,13 +339,13 @@ Not applicable — no schema changes in this phase.
 
 #### Automated
 
-- [x] 1.1 npm test runs and all estimator tests pass
-- [x] 1.2 npm run typecheck passes with the new files
-- [x] 1.3 npm run lint passes
+- [x] 1.1 npm test runs and all estimator tests pass — 8ea9c6b
+- [x] 1.2 npm run typecheck passes with the new files — 8ea9c6b
+- [x] 1.3 npm run lint passes — 8ea9c6b
 
 #### Manual
 
-- [ ] 1.4 Spot-check one hand-computed expected value against the PRD's stated constants by hand
+- [x] 1.4 Spot-check one hand-computed expected value against the PRD's stated constants by hand
 
 ### Phase 2: Integration test harness + save/reload round-trip
 
