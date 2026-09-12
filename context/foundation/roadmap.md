@@ -29,7 +29,7 @@ milestone_status: open
 
 ## Vision recap
 
-Crafters designing original cross-stitch schemes currently improvise with spreadsheets or graph paper — neither understands a stitch grid. Kratka is a focused, browser-based grid pattern editor built on the insight that the cell-painting core is craft-agnostic: the same drawing surface serves cross-stitch, mosaic, and carpet drafting, with only the resource estimator swapping between crafts. The MVP targets cross-stitch designers specifically, delivering a clean drawing surface, palette management, and a printable chart with per-color thread counts and a total time estimate computed from fixed rate constants (45 cm/stitch, 150 stitches/hour).
+Crafters designing original cross-stitch schemes currently improvise with spreadsheets or graph paper — neither understands a stitch grid. Kratka is a focused, browser-based grid pattern editor built on the insight that the cell-painting core is craft-agnostic: the same drawing surface serves cross-stitch, mosaic, and carpet drafting, with only the resource estimator swapping between crafts. The MVP targets cross-stitch designers specifically, delivering a clean drawing surface, palette management, and a printable chart with per-color thread counts and a total time estimate computed from fixed rate constants (7 mm/stitch, 150 stitches/hour).
 
 ## North star
 
@@ -112,7 +112,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ### S-03: Color print view with thread-count estimator
 
-- **Outcome:** user can open a dedicated print view for any saved pattern showing the full grid (with heavy gridlines every 10th row and column and edge numbers), a palette legend listing each color with its computed thread length (cell count × 45 cm/stitch), and a footer with the total time estimate (total filled cells ÷ 150 stitches/hour); when they print via the browser's native print dialog, only the grid and legend appear on the printed page — all app UI is hidden via print CSS.
+- **Outcome:** user can open a dedicated print view for any saved pattern showing the full grid (with heavy gridlines every 10th row and column and edge numbers), a palette legend listing each color with its computed thread length (cell count × 7 mm/stitch), and a footer with the total time estimate (total filled cells ÷ 150 stitches/hour); when they print via the browser's native print dialog, only the grid and legend appear on the printed page — all app UI is hidden via print CSS.
 - **Change ID:** color-print-view
 - **PRD refs:** FR-003 (print view route added to `PROTECTED_ROUTES`), FR-015 (dedicated color print view with grid, palette legend showing per-color thread counts, and total time-estimate footer), FR-016 (print CSS hides all app UI — only grid and legend print), FR-017 (browser native print dialog; no file generated), FR-019 (heavy gridlines every 10th row and column with edge numbers in the print view)
 - **Prerequisites:** S-01 (print view reads a saved pattern; the save mechanism and pattern schema must be verified before print output can be trusted as correct)
@@ -147,7 +147,7 @@ From PRD `## Non-Goals` — all confirmed during shaping:
 - **No auto-save** — Why parked: cut to fit the 3-week target; manual Save button with unsaved-changes warning is the MVP approach (PRD §Non-Goals).
 - **No inline rename** — Why parked: patterns keep auto-generated names in the MVP (PRD §Non-Goals).
 - **No background-color picker** — Why parked: empty cells default to white (PRD §Non-Goals).
-- **No per-pattern constant configuration** — Why parked: 45 cm/stitch and 150 stitches/hour are fixed defaults; configurability is post-MVP (PRD §Non-Goals).
+- **No per-pattern constant configuration** — Why parked: 7 mm/stitch and 150 stitches/hour are fixed defaults; configurability is post-MVP (PRD §Non-Goals).
 - **No undo / redo, no layers** — Why parked: editor polish deferred (PRD §Non-Goals).
 - **No grid resize after creation** — Why parked: grid dimensions are fixed at creation time (PRD §Non-Goals).
 - **No mobile or touch support** — Why parked: desktop browser only for the MVP (PRD §Non-Goals).
@@ -168,4 +168,4 @@ From PRD `## Non-Goals` — all confirmed during shaping:
 - **F-01: (foundation) patterns + pattern_names tables with owner-scoped RLS exist in Supabase; safe per-user CRUD and soft delete are possible** — Archived 2026-08-31 → `context/archive/2026-08-30-patterns-schema-rls/`. Lesson: —.
 - **S-01: create a pattern (set grid size), define a color palette, paint and erase cells with live per-color count, save it, and reopen any saved pattern to continue editing** — Archived 2026-09-08 → `context/archive/2026-08-31-editor-draw-save/`. Lesson: —.
 - **S-02: user can view a list of all their saved patterns showing each pattern's name, grid size (width × height), and last-updated time; and delete any pattern to free a slot, with a brief confirmation prompt before deletion** — Archived 2026-09-09 → `context/archive/2026-09-08-pattern-list-manage/`. Lesson: —.
-- **S-03: user can open a dedicated print view for any saved pattern showing the full grid (with heavy gridlines every 10th row and column and edge numbers), a palette legend listing each color with its computed thread length (cell count × 45 cm/stitch), and a footer with the total time estimate (total filled cells ÷ 150 stitches/hour); when they print via the browser's native print dialog, only the grid and legend appear on the printed page — all app UI is hidden via print CSS** — Archived 2026-09-10 → `context/archive/2026-09-10-color-print-view/`. Lesson: —.
+- **S-03: user can open a dedicated print view for any saved pattern showing the full grid (with heavy gridlines every 10th row and column and edge numbers), a palette legend listing each color with its computed thread length (cell count × 7 mm/stitch), and a footer with the total time estimate (total filled cells ÷ 150 stitches/hour); when they print via the browser's native print dialog, only the grid and legend appear on the printed page — all app UI is hidden via print CSS** — Archived 2026-09-10 → `context/archive/2026-09-10-color-print-view/`. Lesson: —.

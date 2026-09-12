@@ -15,8 +15,7 @@ per-test users — no dev server, no mocking of the database.
   (pgTAP), run via `npx supabase test db`.
 - **`src/lib/patternEstimator.ts`** exports `estimatePattern` and `formatDuration`, using fixed
   constants `MM_PER_STITCH = 7` and `STITCHES_PER_HOUR = 150` — confirmed matching
-  `context/foundation/prd.md`'s Business Logic section exactly (`context/foundation/roadmap.md:115`'s
-  "45 cm/stitch" is a stale, superseded figure — do not use it to derive expected test values).
+  `context/foundation/prd.md`'s Business Logic section exactly.
   Zero test coverage today; `src/pages/patterns/[id]/print.astro` is the sole consumer.
 - **Pattern API routes** (`src/pages/api/patterns/index.ts` POST, `src/pages/api/patterns/[id].ts`
   PATCH/DELETE) are plain exported `async` functions taking an Astro `APIContext` — callable
@@ -340,33 +339,33 @@ Not applicable — no schema changes in this phase.
 
 #### Automated
 
-- [ ] 1.1 npm test runs and all estimator tests pass
-- [ ] 1.2 npm run typecheck passes with the new files
-- [ ] 1.3 npm run lint passes
+- [x] 1.1 npm test runs and all estimator tests pass — 8ea9c6b
+- [x] 1.2 npm run typecheck passes with the new files — 8ea9c6b
+- [x] 1.3 npm run lint passes — 8ea9c6b
 
 #### Manual
 
-- [ ] 1.4 Spot-check one hand-computed expected value against the PRD's stated constants by hand
+- [x] 1.4 Spot-check one hand-computed expected value against the PRD's stated constants by hand — 2bf32de
 
 ### Phase 2: Integration test harness + save/reload round-trip
 
 #### Automated
 
-- [ ] 2.1 npm test runs and all integration tests pass with npx supabase start running locally
-- [ ] 2.2 npm run typecheck passes
-- [ ] 2.3 npm run lint passes
-- [ ] 2.4 Test users created during the run are confirmed cleaned up
+- [x] 2.1 npm test runs and all integration tests pass with npx supabase start running locally — 1efc30e
+- [x] 2.2 npm run typecheck passes — 1efc30e
+- [x] 2.3 npm run lint passes — 1efc30e
+- [x] 2.4 Test users created during the run are confirmed cleaned up — 1efc30e
 
 #### Manual
 
-- [ ] 2.5 Run npm test twice in a row locally and confirm no state leaks between runs
+- [x] 2.5 Run npm test twice in a row locally and confirm no state leaks between runs — 1efc30e
 
 ### Phase 3: Cookbook sync + test-plan correction
 
 #### Automated
 
-- [ ] 3.1 grep confirms the two Phase-1 TBD placeholders (6.1, 6.2) are filled in
+- [x] 3.1 grep confirms the two Phase-1 TBD placeholders (6.1, 6.2) are filled in — c3b55e2
 
 #### Manual
 
-- [ ] 3.2 Read the updated §6.1/§6.2 and §5 sections and confirm they read as accurate, current guidance
+- [x] 3.2 Read the updated §6.1/§6.2 and §5 sections and confirm they read as accurate, current guidance — c3b55e2

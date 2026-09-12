@@ -30,7 +30,7 @@ native dialog with no app chrome on the page.
   existing chrome.
 - The thread-length/time-estimate formula is fully fixed at the PRD level
   (`context/foundation/prd.md:174-186`) but implemented nowhere: thread length per color = (cells
-  using that color) × 45 cm; total time = (total filled cells) ÷ 150 stitches/hour. Both constants
+  using that color) × 7 mm; total time = (total filled cells) ÷ 150 stitches/hour. Both constants
   are non-configurable in the MVP.
 - `PatternDashboard.tsx`'s Actions column was deliberately left open during S-02 for a future Print
   action, but the `patterns-page-ui-improvements` redesign (completed and archived earlier today)
@@ -112,7 +112,7 @@ small test grid.
 
 **Contract**: Export a function
 `estimatePattern(grid: PatternGrid, palette: PatternPalette): { colors: { hex: string; cellCount: number; threadCm: number }[]; totalFilledCells: number; totalHours: number }`.
-`colors` includes only entries with `cellCount > 0`, in palette order. Rate constants (45 cm/stitch,
+`colors` includes only entries with `cellCount > 0`, in palette order. Rate constants (7 mm/stitch,
 150 stitches/hour) are local `const`s in this file, not parameters — matching the PRD's "fixed
 defaults, not user-configurable" decision. A `grid.length === 0` (never-painted sentinel) input
 produces an empty `colors` array and zero totals, not a thrown error.
@@ -174,7 +174,7 @@ SVG `<text>` offsets.
 
 - Navigating to `/patterns/<id>/print` for an owned pattern with a known small grid (e.g. a 20×20
   test pattern with a few cells in 2-3 colors) shows the correct grid, and the legend's
-  thread-length figures and footer time match hand-calculated values (cells × 45 cm; total filled ÷
+  thread-length figures and footer time match hand-calculated values (cells × 7 mm; total filled ÷
   150 hr).
 - Navigating to `/patterns/<id>/print` for another user's pattern id (or a well-formed but
   nonexistent id) redirects to `/patterns`; a malformed id (e.g. `/patterns/not-a-uuid/print`)
@@ -350,7 +350,7 @@ above.
 
 1. Create or reuse a test pattern with a known, small grid and 2-3 distinct colors; note how many
    cells use each color.
-2. Open its print view; confirm each legend row's thread length equals `cellCount × 45 cm` and the
+2. Open its print view; confirm each legend row's thread length equals `cellCount × 7 mm` and the
    footer's total time equals `totalFilledCells ÷ 150` hours.
 3. Trigger the browser's print preview; confirm no app chrome appears, colors render, and the grid
    fits one page width.

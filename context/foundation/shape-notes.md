@@ -128,7 +128,7 @@ inline rename, and the background-color picker. Target: ~3 weeks after-hours.
 - **Then** they get a clean color page showing the grid, a legend of each color with its thread count, and the total time estimate — with no app UI on the page
 
 #### Acceptance Criteria
-- Thread count per color and total time match the drawn grid using the fixed constants (45 cm/stitch, 150 stitches/hour).
+- Thread count per color and total time match the drawn grid using the fixed constants (7 mm/stitch, 150 stitches/hour).
 - No app chrome (toolbars, buttons, sidebar) appears on the printed page.
 - The chart shows a heavier gridline every 10th row/column with edge numbers (10, 20, 30, …) for counting.
 
@@ -203,7 +203,7 @@ presents both on the printable pattern.
 The rule consumes two user-facing inputs: the drawn grid (which cells are filled with which
 palette color) and the palette itself. Its outputs are a per-color thread-length figure and
 a single total time estimate. In the MVP the two rate constants are fixed defaults —
-45 cm of thread per stitch and 150 stitches per hour — not user-configurable (per-pattern
+7 mm of thread per stitch and 150 stitches per hour — not user-configurable (per-pattern
 configurability is post-MVP). The user encounters the result on the color print view: the
 palette legend lists each color with its thread length, and a footer shows the total time
 estimate. A lighter live per-color cell count also appears in the editor while drawing, but

@@ -42,7 +42,7 @@ research's job, see §1 principle #3).
 |---|---|---|---|---|
 | 1 | A user draws/edits a pattern, saves it, and reopens it — the grid, palette, or dimensions don't match what was drawn (silent corruption, not a visible error). Research (2026-09-12) found the write path is already zod+CHECK-constraint guarded; the concrete gap is the reload path, which casts DB data with no re-validation | High | High | PRD US-01 acceptance criteria; interview Q1; hot-spot `src/components/editor/` (10 commits/30d), `src/pages/api/` (12 commits/30d); research.md 2026-09-12 (`testing-critical-path-coverage`) |
 | 2 | A user reaches, views, or modifies another user's pattern via the API by manipulating a pattern id — the app-layer ownership check, not just RLS, is untested | High | Medium | PRD Access Control guardrail; PRD NFR ("never see or modify another user's patterns"); hot-spot `src/pages/api/` (12 commits/30d) — abuse lens: authorization/IDOR |
-| 3 | The printed thread-count or time-estimate legend doesn't match the actual drawn grid | High | Medium | PRD Business Logic section (authoritative: 7mm/stitch, 150 stitches/hour — confirmed matching code by research 2026-09-12); PRD NFR ("no discrepancy between drawn and printed"); roadmap S-03 risk note ("must exactly match... primary correctness NFR" — note: roadmap.md's "45 cm/stitch" figure is stale/superseded, do not use it for test fixtures); hot-spot `src/lib/` (low churn, pure logic, zero tests) |
+| 3 | The printed thread-count or time-estimate legend doesn't match the actual drawn grid | High | Medium | PRD Business Logic section (authoritative: 7mm/stitch, 150 stitches/hour — confirmed matching code by research 2026-09-12); PRD NFR ("no discrepancy between drawn and printed"); hot-spot `src/lib/` (low churn, pure logic, zero tests) |
 | 4 | A user creates a 4th pattern, or slot/name assignment desyncs, under concurrent create requests | Medium-High | Medium | PRD FR-005, FR-006; roadmap F-01 risk note ("misconfigured policy silently violates guardrail across all slices"); lessons.md L-03 (prior seed/schema desync incident) |
 | 5 | Server accepts an out-of-bounds grid (dimensions outside 20–100, palette over 30 colors) because validation is client-side only | Medium | Medium | PRD FR-004, FR-007; PRD NFR (100×100 performance ceiling) — abuse lens: untrusted input / resource abuse |
 | 6 | A soft-deleted pattern remains reachable — still shows in the list, still opens, or still prints | Medium | Medium | PRD FR-013 (deletion must be invisible to the owner); roadmap F-01 (soft delete via `deleted_at`) |
@@ -68,8 +68,8 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Bootstrap runner + critical-path coverage | Prove the save/reload round-trip and the estimator math are correct | #1, #3 | unit + integration | researched | `context/changes/testing-critical-path-coverage/` |
-| 2 | Authorization & business-rule guardrails | Prove ownership checks, the 3-pattern cap, input bounds, and soft-delete invisibility hold at the API layer | #2, #4, #5, #6 | integration | not started | — |
+| 1 | Bootstrap runner + critical-path coverage | Prove the save/reload round-trip and the estimator math are correct | #1, #3 | unit + integration | complete | `context/changes/testing-critical-path-coverage/` |
+| 2 | Authorization & business-rule guardrails | Prove ownership checks, the 3-pattern cap, input bounds, and soft-delete invisibility hold at the API layer | #2, #4, #5, #6 | integration | change opened | `context/changes/testing-authorization-guardrails/` |
 | 3 | Print correctness + quality-gates wiring | Lock in chrome-free print output; wire required gates into CI | #7 | deterministic DOM/CSS check + selective AI-native visual spot-check | not started | — |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
@@ -108,7 +108,7 @@ phase lands; before that, the gate is `planned`.
 |---|---|---|---|
 | lint + typecheck | local + CI (already wired, `.github/workflows/ci.yml`) | required | syntactic / type drift |
 | pgTAP (database) | local (`npx supabase test db`) | required after §3 Phase 2 | RLS/schema regressions |
-| unit + integration | local + CI | required after §3 Phase 1 | save/reload and estimator regressions |
+| unit + integration | local + CI | required after §3 Phase 3 | save/reload and estimator regressions |
 | API authorization tests | CI | required after §3 Phase 2 | ownership/IDOR, cap, validation, soft-delete regressions |
 | deterministic print-CSS check | CI on PR | required after §3 Phase 3 | app chrome leaking into print output |
 | multimodal visual review | CI on PR | optional, selective (print view only) | visual issues the deterministic check misses |
@@ -120,10 +120,16 @@ the relevant rollout phase ships; before that, the sub-section reads
 "TBD — see §3 Phase <N>."
 
 ### 6.1 Adding a unit test
-- TBD — see §3 Phase 1 (estimator math, Risk #3).
+- **Location**: co-located with the module under test, `*.test.ts` next to the source file (e.g. `src/lib/patternEstimator.test.ts` alongside `src/lib/patternEstimator.ts`).
+- **Naming**: `<module-name>.test.ts`; `describe` block per exported function, `it` per behavior/boundary.
+- **Reference test**: `src/lib/patternEstimator.test.ts` — covers `estimatePattern`/`formatDuration` against hand-computed expected values (never asserted against the function's own output).
+- **Run command**: `npm test` (all suites) or `npx vitest run src/lib/patternEstimator.test.ts` (single file). Config: `vitest.config.ts` (plain `defineConfig` from `vitest/config`, not Astro's `getViteConfig` — see the file's inline note for why).
 
 ### 6.2 Adding an integration test
-- TBD — see §3 Phase 1 (save/reload round-trip, Risk #1).
+- **Location**: `test/integration/`, separate from the `src/` tree; shared fixtures under `test/integration/helpers/`.
+- **Naming**: `<flow-name>.test.ts` (e.g. `patterns-round-trip.test.ts`); helpers named for what they build (`test-user.ts`, `api-context.ts`).
+- **Reference test**: `test/integration/patterns-round-trip.test.ts` — calls the real exported route handlers (`POST`/`PATCH` from `src/pages/api/patterns/`) in-process against local Supabase, using `test/integration/helpers/test-user.ts` (ephemeral per-test users via the Admin API, service-role key from `.env.test`) and `test/integration/helpers/api-context.ts` (real cookie-jar sign-in via `@supabase/ssr`, so RLS's `auth.uid()` resolves for real — a plain `locals.user` object is not enough). No mocking of the database.
+- **Run command**: `npx supabase start` (once, local stack must be running), then `npm test`. Requires `.env.test` (gitignored) with `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from `npx supabase status`.
 
 ### 6.3 Adding an API authorization/business-rule test
 - TBD — see §3 Phase 2 (ownership, cap, validation, soft-delete — Risks #2, #4, #5, #6).
