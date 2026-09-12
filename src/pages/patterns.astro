@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
+import { getPatternListForOwner } from "@/lib/patternQueries";
 import AppHeader from "@/components/AppHeader.astro";
 import PatternDashboard from "@/components/patterns/PatternDashboard";
 import type { PatternListItem } from "@/types";
@@ -12,13 +13,7 @@ const { user } = Astro.locals;
 // is needed. One query now covers both the pattern list (FR-011) and the
 // 3-pattern cap check, replacing the old count-only query.
 const supabase = createClient(Astro.request.headers, Astro.cookies);
-const { data } = supabase
-  ? await supabase
-      .from("patterns")
-      .select("id, name, width, height, updated_at")
-      .order("updated_at", { ascending: false })
-  : { data: null };
-const patterns: PatternListItem[] = data ?? [];
+const patterns: PatternListItem[] = supabase ? await getPatternListForOwner(supabase) : [];
 const createError = Astro.url.searchParams.get("error") ?? undefined;
 ---
 

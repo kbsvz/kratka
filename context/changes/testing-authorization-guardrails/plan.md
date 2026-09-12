@@ -328,14 +328,14 @@ No schema changes. Phase 4's retry logic is application code only.
 
 #### Automated
 
-- [ ] 1.1 Type checking passes: `npx astro check`
-- [ ] 1.2 Linting passes: `npm run lint`
-- [ ] 1.3 Existing integration tests pass, now exercising the extracted functions: `npm test`
+- [x] 1.1 Type checking passes: `npx astro check`
+- [x] 1.2 Linting passes: `npm run lint`
+- [x] 1.3 Existing integration tests pass, now exercising the extracted functions: `npm test`
 
 #### Manual
 
-- [ ] 1.4 The pattern list, editor, and print pages all still load correctly for an existing test pattern
-- [ ] 1.5 A nonexistent/foreign pattern id still redirects/404s exactly as before on all three routes
+- [x] 1.4 The pattern list, editor, and print pages all still load correctly for an existing test pattern
+- [x] 1.5 A nonexistent/foreign pattern id still redirects/404s exactly as before on all three routes
 
 ### Phase 2: Risk #2 — cross-user access tests
 
