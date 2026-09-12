@@ -86,7 +86,7 @@ co-equal MVP persona.
 - **Then** they get a clean color page showing the grid, a legend of each color with its thread count, and the total time estimate — with no app UI on the page
 
 #### Acceptance Criteria
-- Thread count per color and total time match the drawn grid using the fixed constants (45 cm/stitch, 150 stitches/hour).
+- Thread count per color and total time match the drawn grid using the fixed constants (7 mm/stitch, 150 stitches/hour).
 - No app chrome (toolbars, buttons, sidebar) appears on the printed page.
 - The chart shows a heavier gridline every 10th row/column with edge numbers (10, 20, 30, …) for counting.
 

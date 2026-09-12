@@ -27,7 +27,7 @@ Ground rollout Phase 1 of `context/foundation/test-plan.md` ("Bootstrap runner +
 
 Both risks are real and actionable, and the response guidance in `test-plan.md` §2 holds up — with one correction and one sharpened finding:
 
-- **Risk #3 (estimator) is grounded and slightly re-scoped.** The code (`src/lib/patternEstimator.ts`) matches the PRD's stated constants (7mm/stitch, 150 stitches/hour) exactly. `roadmap.md:115`'s "45 cm/stitch" is a **stale, superseded figure** — it should NOT be used to derive expected values in a test fixture. There is zero test coverage today. `print.astro` is the sole consumer, so the cheapest layer is a pure unit test against `estimatePattern`/`formatDuration`, no I/O needed.
+- **Risk #3 (estimator) is grounded and slightly re-scoped.** The code (`src/lib/patternEstimator.ts`) matches the PRD's stated constants (7mm/stitch, 150 stitches/hour) exactly. There is zero test coverage today. `print.astro` is the sole consumer, so the cheapest layer is a pure unit test against `estimatePattern`/`formatDuration`, no I/O needed.
 - **Risk #1 (save/reload) is grounded and more concrete than the plan assumed.** There is no GET API route — reload happens via a direct Supabase query inside an Astro page (`src/pages/patterns/[id].astro`), and critically, **that reload path has zero schema validation** — it casts the DB's `Json` columns straight to `PatternPalette`/`PatternGrid` with `as unknown as`, unlike every write path which validates through zod. The most concrete failure mode isn't "save corrupts data" (the DB CHECK constraints already guard the write) — it's **"a malformed/legacy row silently produces a wrong-looking grid on reopen because nothing revalidates it."** `usePatternGrid.ts` then does `Uint8Array.from(pattern.grid)`, which does not throw on a length mismatch — it silently truncates/pads.
 
 No speculative risks found; both are real, currently-unguarded behaviors, not hypothetical safeguards.
@@ -86,8 +86,7 @@ The `patterns_before_update` trigger (lines 326-340) pins `user_id`, `seq`, `slo
 
 - `src/lib/patternEstimator.ts:4-5,34-35,40`: `MM_PER_STITCH = 7`, `STITCHES_PER_HOUR = 150`; `threadMm = MM_PER_STITCH * cellCount`, `threadCm = threadMm / 10`; `totalHours = totalFilledCells / STITCHES_PER_HOUR`.
 - `context/foundation/prd.md:181-183` ("## Business Logic"): "7 mm of thread per stitch (thread length in mm = 7 × cell count, converted to cm) and 150 stitches per hour" — **matches code exactly.**
-- `context/foundation/roadmap.md:115` states "45 cm/stitch" — a **stale, superseded figure**, off by more than 60x from the real 7mm (0.7cm) per stitch. `context/archive/2026-09-10-color-print-view/plan.md:31-34,258-262,278-283` documents the history: the PRD originally said "45 cm/stitch," this was changed during implementation to `7mm × cellCount` (after trying and dropping a `+120mm` fixed allowance), and the PRD was updated in the same session to match — but the roadmap was evidently missed in that update.
-  - **Action for test-plan §2:** do not derive expected values in any test fixture from the roadmap's "45 cm/stitch" — use the PRD/code's 7mm-per-stitch figure. This is a Source-column correction candidate (roadmap.md citation is misleading), not a code bug.
+  - **Action for test-plan §2:** 
 - Thread length is rendered rounded up per color via `Math.ceil` in `src/pages/patterns/[id]/print.astro:176`; `formatDuration(estimate.totalHours)` is called at `print.astro:184`. `estimatePattern` is called at `print.astro:42`.
 - Zero-total edge case: an empty/never-painted grid (`grid.length === 0`) yields a blank grid, empty legend, zero time, no error — documented both in `patternEstimator.ts`'s doc comment (lines 19-23) and `context/archive/2026-09-10-color-print-view/plan.md:397`.
 - No large-total or hours-rounding edge case (e.g., a duration that rounds to exactly 60 minutes) is discussed anywhere in the archive — worth a test case since `formatDuration`'s `Math.round(hours * 60)` could produce `h=1, m=0` from an input just under 1 hour, which the existing `if (m === 0) return "${h}h"` branch already handles, but is unverified.
@@ -108,7 +107,6 @@ The `patterns_before_update` trigger (lines 326-340) pins `user_id`, `seq`, `slo
 - `src/lib/patternEstimator.ts:1-53` — `estimatePattern`, `formatDuration`, constants
 - `src/pages/patterns/[id]/print.astro:42,176,184` — sole consumer of the estimator
 - `context/foundation/prd.md:181-183` — authoritative Business Logic constants
-- `context/foundation/roadmap.md:115` — stale "45 cm/stitch" figure (correction candidate)
 - `context/archive/2026-09-10-color-print-view/plan.md:31-34,258-262,278-283,397` — history of the constant change and zero-total edge case
 
 ## Architecture Insights

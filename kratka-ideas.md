@@ -63,7 +63,7 @@ Everything else is post-MVP.
 - A user may own at most 3 patterns. This is enforced both in the UI (button disabled with message) and on the server (Supabase RLS policy or API endpoint check rejects insert if count ≥ 3).
 
 ### Business logic — estimator
-- Thread count per color: `stitch_count × thread_length_constant` (default: 45 cm per stitch, configurable per pattern).
+- Thread count per color: `stitch_count × thread_length_constant` (default: 7 mm per stitch, configurable per pattern).
 - Time estimate: `total_stitch_count / stitches_per_hour` (default: 150 stitches/hour, configurable per pattern).
 - Both values are displayed live in the editor sidebar as the user draws.
 
