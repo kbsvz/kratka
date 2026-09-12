@@ -364,8 +364,8 @@ Not applicable — no schema changes in this phase.
 
 #### Automated
 
-- [x] 3.1 grep confirms the two Phase-1 TBD placeholders (6.1, 6.2) are filled in
+- [x] 3.1 grep confirms the two Phase-1 TBD placeholders (6.1, 6.2) are filled in — c3b55e2
 
 #### Manual
 
-- [ ] 3.2 Read the updated §6.1/§6.2 and §5 sections and confirm they read as accurate, current guidance
+- [x] 3.2 Read the updated §6.1/§6.2 and §5 sections and confirm they read as accurate, current guidance — c3b55e2

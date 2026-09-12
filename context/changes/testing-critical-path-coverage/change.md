@@ -1,7 +1,7 @@
 ---
 change_id: testing-critical-path-coverage
 title: Bootstrap test runner and cover save/reload + estimator correctness
-status: implementing
+status: implemented
 created: 2026-09-12
 updated: 2026-09-12
 archived_at: null
