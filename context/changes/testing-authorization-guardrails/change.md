@@ -1,7 +1,7 @@
 ---
 change_id: testing-authorization-guardrails
 title: Authorization & business-rule guardrails
-status: plan_reviewed
+status: implementing
 created: 2026-09-12
 updated: 2026-09-12
 archived_at: null

@@ -19,5 +19,9 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts", "test/**/*.test.ts"],
     setupFiles: ["./test/setup/load-env.ts"],
+    // All integration files share one local Postgres, and some tests race
+    // concurrent requests by construction — cross-file parallelism would
+    // make those runs collide with unrelated tests' data.
+    fileParallelism: false,
   },
 });
