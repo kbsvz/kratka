@@ -351,14 +351,14 @@ Not applicable — no schema changes in this phase.
 
 #### Automated
 
-- [ ] 2.1 npm test runs and all integration tests pass with npx supabase start running locally
-- [ ] 2.2 npm run typecheck passes
-- [ ] 2.3 npm run lint passes
-- [ ] 2.4 Test users created during the run are confirmed cleaned up
+- [x] 2.1 npm test runs and all integration tests pass with npx supabase start running locally
+- [x] 2.2 npm run typecheck passes
+- [x] 2.3 npm run lint passes
+- [x] 2.4 Test users created during the run are confirmed cleaned up
 
 #### Manual
 
-- [ ] 2.5 Run npm test twice in a row locally and confirm no state leaks between runs
+- [x] 2.5 Run npm test twice in a row locally and confirm no state leaks between runs
 
 ### Phase 3: Cookbook sync + test-plan correction
 

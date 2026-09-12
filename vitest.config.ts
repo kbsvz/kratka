@@ -11,9 +11,13 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // See test/setup/astro-env-server.mock.ts for why this is aliased rather
+      // than resolved for real.
+      "astro:env/server": path.resolve(__dirname, "./test/setup/astro-env-server.mock.ts"),
     },
   },
   test: {
     include: ["src/**/*.test.ts", "test/**/*.test.ts"],
+    setupFiles: ["./test/setup/load-env.ts"],
   },
 });
