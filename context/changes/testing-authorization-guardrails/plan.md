@@ -350,23 +350,23 @@ No schema changes. Phase 4's retry logic is application code only.
 
 #### Automated
 
-- [x] 3.1 New test file passes: `npx vitest run test/integration/patterns-soft-delete.test.ts`
-- [x] 3.2 Full suite passes: `npm test`
-- [x] 3.3 Type checking passes: `npx astro check`
-- [x] 3.4 Linting passes: `npm run lint`
+- [x] 3.1 New test file passes: `npx vitest run test/integration/patterns-soft-delete.test.ts` — dff4007
+- [x] 3.2 Full suite passes: `npm test` — dff4007
+- [x] 3.3 Type checking passes: `npx astro check` — dff4007
+- [x] 3.4 Linting passes: `npm run lint` — dff4007
 
 ### Phase 4: Risk #4 — concurrency fix + test
 
 #### Automated
 
-- [ ] 4.1 New test file passes: `npx vitest run test/integration/patterns-concurrent-create.test.ts`
-- [ ] 4.2 Full suite passes: `npm test`
-- [ ] 4.3 Type checking passes: `npx astro check`
-- [ ] 4.4 Linting passes: `npm run lint`
+- [x] 4.1 New test file passes: `npx vitest run test/integration/patterns-concurrent-create.test.ts`
+- [x] 4.2 Full suite passes: `npm test`
+- [x] 4.3 Type checking passes: `npx astro check`
+- [x] 4.4 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 4.5 Creating a 4th pattern via the UI still shows the existing "You already have 3 patterns" message
+- [x] 4.5 Creating a 4th pattern via the UI still shows the existing "You already have 3 patterns" message
 
 ### Phase 5: Risk #5 — input-bounds tests
 
