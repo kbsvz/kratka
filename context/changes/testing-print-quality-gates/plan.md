@@ -323,9 +323,9 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` exits 0 locally
-- [x] 1.2 `.github/workflows/ci.yml` is valid YAML
-- [x] 1.3 `grep -c "typecheck" .github/workflows/ci.yml` returns ≥ 1
+- [x] 1.1 `npm run typecheck` exits 0 locally — b9fe358
+- [x] 1.2 `.github/workflows/ci.yml` is valid YAML — b9fe358
+- [x] 1.3 `grep -c "typecheck" .github/workflows/ci.yml` returns ≥ 1 — b9fe358
 
 #### Manual
 
@@ -335,8 +335,8 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [ ] 2.1 `npx vitest run "src/pages/patterns/[id]/print.test.ts"` passes locally
-- [ ] 2.2 `grep -c "print-check" .github/workflows/ci.yml` returns ≥ 1
+- [x] 2.1 `npx vitest run "src/pages/patterns/[id]/print.test.ts"` passes locally
+- [x] 2.2 `grep -c "print-check" .github/workflows/ci.yml` returns ≥ 1
 
 #### Manual
 
