@@ -7,6 +7,9 @@ import type { TestUser } from "./test-user";
 const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const SUPABASE_KEY = process.env.SUPABASE_KEY ?? "";
 
+/** Base URL for the patterns API, shared across every integration test file. */
+export const PATTERNS_API_BASE_URL = "http://localhost/api/patterns";
+
 /**
  * Signs in as `user` through the same @supabase/ssr cookie-writing mechanism
  * the app uses (src/lib/supabase.ts's createClient), capturing the resulting

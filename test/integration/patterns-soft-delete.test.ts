@@ -2,10 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { POST } from "@/pages/api/patterns/index.ts";
 import { PATCH, DELETE } from "@/pages/api/patterns/[id].ts";
 import { getPatternForOwner, getPatternListForOwner } from "@/lib/patternQueries";
-import { buildAuthenticatedContext, signInTestUser } from "./helpers/api-context";
+import { buildAuthenticatedContext, signInTestUser, PATTERNS_API_BASE_URL as BASE_URL } from "./helpers/api-context";
 import { cleanupTestUser, createTestUser, type TestUser } from "./helpers/test-user";
-
-const BASE_URL = "http://localhost/api/patterns";
 
 let user: TestUser;
 

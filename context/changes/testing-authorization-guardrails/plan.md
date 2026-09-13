@@ -359,23 +359,23 @@ No schema changes. Phase 4's retry logic is application code only.
 
 #### Automated
 
-- [x] 4.1 New test file passes: `npx vitest run test/integration/patterns-concurrent-create.test.ts`
-- [x] 4.2 Full suite passes: `npm test`
-- [x] 4.3 Type checking passes: `npx astro check`
-- [x] 4.4 Linting passes: `npm run lint`
+- [x] 4.1 New test file passes: `npx vitest run test/integration/patterns-concurrent-create.test.ts` — e6acb21
+- [x] 4.2 Full suite passes: `npm test` — e6acb21
+- [x] 4.3 Type checking passes: `npx astro check` — e6acb21
+- [x] 4.4 Linting passes: `npm run lint` — e6acb21
 
 #### Manual
 
-- [x] 4.5 Creating a 4th pattern via the UI still shows the existing "You already have 3 patterns" message
+- [x] 4.5 Creating a 4th pattern via the UI still shows the existing "You already have 3 patterns" message — e6acb21
 
 ### Phase 5: Risk #5 — input-bounds tests
 
 #### Automated
 
-- [ ] 5.1 New test file passes: `npx vitest run test/integration/patterns-input-bounds.test.ts`
-- [ ] 5.2 Full suite passes: `npm test`
-- [ ] 5.3 Type checking passes: `npx astro check`
-- [ ] 5.4 Linting passes: `npm run lint`
+- [x] 5.1 New test file passes: `npx vitest run test/integration/patterns-input-bounds.test.ts`
+- [x] 5.2 Full suite passes: `npm test`
+- [x] 5.3 Type checking passes: `npx astro check`
+- [x] 5.4 Linting passes: `npm run lint`
 
 ### Phase 6: Cookbook sync + test-plan correction
 

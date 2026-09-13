@@ -1,11 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { POST } from "@/pages/api/patterns/index.ts";
-import { buildAuthenticatedContext } from "./helpers/api-context";
+import { buildAuthenticatedContext, PATTERNS_API_BASE_URL as BASE_URL } from "./helpers/api-context";
 import { cleanupTestUser, createTestUser, countPatternsForUser, type TestUser } from "./helpers/test-user";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
-
-const BASE_URL = "http://localhost/api/patterns";
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
