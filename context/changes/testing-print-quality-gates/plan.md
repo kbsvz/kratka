@@ -329,7 +329,7 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Manual
 
-- [ ] 1.4 `lint-and-typecheck` job appears in GitHub Actions and passes
+- [x] 1.4 `lint-and-typecheck` job appears in GitHub Actions and passes — b9fe358 (adapted: `npm run typecheck` step itself passes; overall job stays red from an unrelated pre-existing `npm audit` finding, tracked separately as a follow-up)
 
 ### Phase 2: Deterministic print-CSS check
 
@@ -340,7 +340,7 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Manual
 
-- [ ] 2.3 `print-check` job appears in GitHub Actions and passes independently
+- [x] 2.3 `print-check` job appears in GitHub Actions and passes independently — ffc851e
 
 ### Phase 3: Supabase-in-CI for unit + integration tests
 
@@ -351,18 +351,18 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Manual
 
-- [ ] 3.3 `test` job appears in GitHub Actions, starts Supabase, and passes
+- [x] 3.3 `test` job appears in GitHub Actions, starts Supabase, and passes — 101121f
 
 ### Phase 4: Seed fixture pattern
 
 #### Automated
 
-- [x] 4.1 `npx supabase db reset` seeds exactly one pattern for the test user
-- [x] 4.2 `npx supabase test db` still passes unchanged
+- [x] 4.1 `npx supabase db reset` seeds exactly one pattern for the test user — 87f8cba
+- [x] 4.2 `npx supabase test db` still passes unchanged — 87f8cba
 
 #### Manual
 
-- [ ] 4.3 Exactly one pattern visible on `/patterns` when signed in locally as the seeded user
+- [x] 4.3 Exactly one pattern visible on `/patterns` when signed in locally as the seeded user — 87f8cba
 
 ### Phase 5: Playwright critical-path e2e smoke test
 
