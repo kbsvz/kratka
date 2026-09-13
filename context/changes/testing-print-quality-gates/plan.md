@@ -323,9 +323,9 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [ ] 1.1 `npm run typecheck` exits 0 locally
-- [ ] 1.2 `.github/workflows/ci.yml` is valid YAML
-- [ ] 1.3 `grep -c "typecheck" .github/workflows/ci.yml` returns ≥ 1
+- [x] 1.1 `npm run typecheck` exits 0 locally
+- [x] 1.2 `.github/workflows/ci.yml` is valid YAML
+- [x] 1.3 `grep -c "typecheck" .github/workflows/ci.yml` returns ≥ 1
 
 #### Manual
 
