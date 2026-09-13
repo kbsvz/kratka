@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-09-13 (Phase 2 complete; research backport: Risk #5/#6 premise correction)
+> Last updated: 2026-09-13 (test-plan-refresh-2026-09-13: CI-gate honesty + e2e smoke-test exception)
 
 ## 1. Strategy
 
@@ -70,7 +70,7 @@ orchestrator updates Status as artifacts appear on disk.
 |---|---|---|---|---|---|---|
 | 1 | Bootstrap runner + critical-path coverage | Prove the save/reload round-trip and the estimator math are correct | #1, #3 | unit + integration | complete | `context/changes/testing-critical-path-coverage/` |
 | 2 | Authorization & business-rule guardrails | Prove ownership checks, the 3-pattern cap, input bounds, and soft-delete invisibility hold at the API layer | #2, #4, #5, #6 | integration | complete | `context/changes/testing-authorization-guardrails/` |
-| 3 | Print correctness + quality-gates wiring | Lock in chrome-free print output; wire required gates into CI | #7 | deterministic DOM/CSS check + selective AI-native visual spot-check | not started | — |
+| 3 | Print correctness + quality-gates wiring | Lock in chrome-free print output; add one critical-path e2e smoke test; wire required gates (incl. typecheck) into CI | #7 | deterministic DOM/CSS check + selective AI-native visual spot-check + one Playwright critical-path e2e smoke test | change opened | `context/changes/testing-print-quality-gates/` |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
 
@@ -88,7 +88,7 @@ no docs or search MCP was available in the current session.
 | database | pgTAP (`npx supabase test db`) | via `supabase` CLI ^2.23.4 | Only existing test layer today — covers RLS isolation (`supabase/tests/database/patterns_rls.test.sql`) |
 | unit + integration | none yet — see §3 Phase 1 | — | No vitest/jest/similar installed; Phase 1 bootstraps the runner |
 | API mocking | none yet — see §3 Phase 1 | — | Integration tests should hit a real local Supabase instance per existing pgTAP convention, not mock the DB |
-| e2e | none — not planned | — | Interview Q5 rejected broad automated UI-path coverage; no e2e rollout phase is scoped |
+| e2e | Playwright — not yet installed, see §3 Phase 3 | — | checked: 2026-09-13 — one minimal critical-path smoke test (sign-in → open pattern → print), a narrow exception to the no-broad-e2e stance (§7); not for general UI-path coverage |
 | accessibility | none — not planned | — | Not raised as a risk in discovery or interview; out of scope for this rollout |
 | (optional) AI-native | Claude Browser MCP — checked: 2026-09-10 | n/a | Selective visual spot-check of the print view only (Risk #7); do NOT use for routine UI-layout iteration (interview Q3/Q5) |
 
@@ -106,12 +106,13 @@ phase lands; before that, the gate is `planned`.
 
 | Gate | Where | Required? | Catches |
 |---|---|---|---|
-| lint + typecheck | local + CI (already wired, `.github/workflows/ci.yml`) | required | syntactic / type drift |
+| lint + typecheck | lint: local + CI (wired); typecheck: not yet wired — see §3 Phase 3 | required | syntactic / type drift |
 | pgTAP (database) | local (`npx supabase test db`) | required after §3 Phase 2 | RLS/schema regressions |
 | unit + integration | local + CI | required after §3 Phase 3 | save/reload and estimator regressions |
 | API authorization tests | CI | required after §3 Phase 2 | ownership/IDOR, cap, validation, soft-delete regressions |
 | deterministic print-CSS check | CI on PR | required after §3 Phase 3 | app chrome leaking into print output |
 | multimodal visual review | CI on PR | optional, selective (print view only) | visual issues the deterministic check misses |
+| critical-path e2e smoke test | CI on PR | required after §3 Phase 3 | regressions in the sign-in → open pattern → print flow that unit/integration/deterministic checks wouldn't catch |
 
 ## 6. Cookbook Patterns
 
@@ -147,14 +148,14 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 Exclusions agreed during the rollout (Phase 2 interview, Q5).
 
-- **Exhaustive automated UI-path coverage** — the team explicitly does not want every UI path automated; where UI behavior needs a test, it should run against prepared/seeded test data rather than exploring permutations. Re-evaluate if the app grows enough user-facing complexity that manual smoke testing stops being reliable. (Source: Phase 2 interview Q5.)
+- **Exhaustive automated UI-path coverage** — the team explicitly does not want every UI path automated; where UI behavior needs a test, it should run against prepared/seeded test data rather than exploring permutations. Re-evaluate if the app grows enough user-facing complexity that manual smoke testing stops being reliable. (Source: Phase 2 interview Q5.) One narrow exception was added during the 2026-09-13 refresh: a single Playwright smoke test for the sign-in → open pattern → print flow (see §3 Phase 3, §4, §5) — this is a targeted addition for the one flow that matters most, not a reversal of the broader exclusion.
 - **UI layout / visual snapshot tests** — layout is iterated frequently for usability and design; snapshot tests here would break constantly and catch nothing. Re-evaluate once the visual design stabilizes. (Source: Phase 2 interview Q3.)
 - **Auth page rendering (Supabase-backed logic itself)** — Supabase owns the actual auth mechanics; only the app's own ownership/authorization logic on top of it is in scope (see Risk #2). (Source: PRD Access Control section — auth mechanism is a third-party boundary, not app logic.)
 - **A 3+-way concurrent create race exhausting a caller while a slot is still free** — Phase 2's retry-once fix (Risk #4) only guards a two-way race; a third concurrent request can still see the cap-reached message even though a slot opened up mid-race. Not tested and not defended against — accepted as a rare edge case, not a correctness bug the cap logic promises to prevent. (Source: `context/changes/testing-authorization-guardrails/plan.md` Phase 4.)
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-09-10
+- Strategy (§1–§5) last reviewed: 2026-09-13
 - Stack versions last verified: 2026-09-10
 - AI-native tool references last verified: 2026-09-10
 
