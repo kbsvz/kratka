@@ -335,8 +335,8 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [x] 2.1 `npx vitest run "src/pages/patterns/[id]/print.test.ts"` passes locally
-- [x] 2.2 `grep -c "print-check" .github/workflows/ci.yml` returns ≥ 1
+- [x] 2.1 `npx vitest run "src/pages/patterns/[id]/print.test.ts"` passes locally — a8a0ddb
+- [x] 2.2 `grep -c "print-check" .github/workflows/ci.yml` returns ≥ 1 — a8a0ddb
 
 #### Manual
 

@@ -34,4 +34,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # print.test.ts needs neither Supabase nor real env values, but
+      # vitest's global setupFiles (test/setup/load-env.ts) unconditionally
+      # loads .dev.vars/.env.test for every run — empty files satisfy that
+      # precondition without pulling in the Supabase-in-CI setup Phase 3 adds.
+      - run: touch .dev.vars .env.test
       - run: npx vitest run "src/pages/patterns/[id]/print.test.ts"
