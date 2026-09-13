@@ -346,8 +346,8 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [x] 3.1 `npx supabase start` + `npm test` passes locally
-- [x] 3.2 `grep -c "supabase start" .github/workflows/ci.yml` returns ≥ 1
+- [x] 3.1 `npx supabase start` + `npm test` passes locally — 101121f
+- [x] 3.2 `grep -c "supabase start" .github/workflows/ci.yml` returns ≥ 1 — 101121f
 
 #### Manual
 
@@ -357,8 +357,8 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [ ] 4.1 `npx supabase db reset` seeds exactly one pattern for the test user
-- [ ] 4.2 `npx supabase test db` still passes unchanged
+- [x] 4.1 `npx supabase db reset` seeds exactly one pattern for the test user
+- [x] 4.2 `npx supabase test db` still passes unchanged
 
 #### Manual
 
