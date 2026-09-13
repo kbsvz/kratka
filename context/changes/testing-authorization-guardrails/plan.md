@@ -372,18 +372,18 @@ No schema changes. Phase 4's retry logic is application code only.
 
 #### Automated
 
-- [x] 5.1 New test file passes: `npx vitest run test/integration/patterns-input-bounds.test.ts`
-- [x] 5.2 Full suite passes: `npm test`
-- [x] 5.3 Type checking passes: `npx astro check`
-- [x] 5.4 Linting passes: `npm run lint`
+- [x] 5.1 New test file passes: `npx vitest run test/integration/patterns-input-bounds.test.ts` — 00839fb
+- [x] 5.2 Full suite passes: `npm test` — 00839fb
+- [x] 5.3 Type checking passes: `npx astro check` — 00839fb
+- [x] 5.4 Linting passes: `npm run lint` — 00839fb
 
 ### Phase 6: Cookbook sync + test-plan correction
 
 #### Automated
 
-- [ ] 6.1 `grep -c "TBD — see §3 Phase 2" context/foundation/test-plan.md` returns `0`
+- [x] 6.1 `grep -c "TBD — see §3 Phase 2" context/foundation/test-plan.md` returns `0`
 
 #### Manual
 
-- [ ] 6.2 §3 Phase 2 row reads `complete` with a change-folder link
-- [ ] 6.3 §6.3 reads as a usable recipe, not a placeholder
+- [x] 6.2 §3 Phase 2 row reads `complete` with a change-folder link
+- [x] 6.3 §6.3 reads as a usable recipe, not a placeholder
