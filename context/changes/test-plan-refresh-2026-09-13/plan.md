@@ -155,12 +155,12 @@ None.
 
 #### Automated
 
-- [x] 1.1 `grep -c "not yet wired" context/foundation/test-plan.md` returns ≥ 1
-- [x] 1.2 `grep -c "critical-path e2e smoke test" context/foundation/test-plan.md` returns ≥ 2
-- [x] 1.3 Freshness Ledger line shows `2026-09-13`
-- [x] 1.4 Only the expected files are modified/added in `git status --porcelain`
+- [x] 1.1 `grep -c "not yet wired" context/foundation/test-plan.md` returns ≥ 1 — 66c966d
+- [x] 1.2 `grep -c "critical-path e2e smoke test" context/foundation/test-plan.md` returns ≥ 2 — 66c966d
+- [x] 1.3 Freshness Ledger line shows `2026-09-13` — 66c966d
+- [x] 1.4 Only the expected files are modified/added in `git status --porcelain` — 66c966d
 
 #### Manual
 
-- [ ] 1.5 §3/§4/§5/§7 read coherently end-to-end
-- [ ] 1.6 No CI YAML, `package.json`, or test code touched
+- [x] 1.5 §3/§4/§5/§7 read coherently end-to-end — 66c966d
+- [x] 1.6 No CI YAML, `package.json`, or test code touched — 66c966d
