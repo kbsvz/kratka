@@ -57,11 +57,17 @@ export const POST: APIRoute = async (context) => {
     // (migration 20260830140641, patterns_before_insert) — matching on the
     // stable error code rather than the message text so a wording change to
     // the trigger's RAISE EXCEPTION can't silently break cap detection.
-    const message =
-      result.error.code === "KR001" || result.error.code === "23505"
-        ? "You already have 3 patterns. Delete one to create another."
-        : result.error.message;
-    return context.redirect(`/patterns?error=${encodeURIComponent(message)}`);
+    if (result.error.code === "KR001" || result.error.code === "23505") {
+      return context.redirect(
+        `/patterns?error=${encodeURIComponent("You already have 3 patterns. Delete one to create another.")}`,
+      );
+    }
+    // Any other code is an unexpected failure — log server-side and return a
+    // generic message, matching PATCH/DELETE's handling in [id].ts, instead
+    // of surfacing raw DB error text to the client.
+    // eslint-disable-next-line no-console -- intentional server-side log for an unexpected create failure
+    console.error("Failed to create pattern", { userId: user.id, error: result.error });
+    return context.redirect(`/patterns?error=${encodeURIComponent("Create failed")}`);
   }
 
   return context.redirect(`/patterns/${result.data.id}`);
