@@ -335,8 +335,8 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [x] 2.1 `npx vitest run "src/pages/patterns/[id]/print.test.ts"` passes locally — a8a0ddb
-- [x] 2.2 `grep -c "print-check" .github/workflows/ci.yml` returns ≥ 1 — a8a0ddb
+- [x] 2.1 `npx vitest run "src/pages/patterns/[id]/print.test.ts"` passes locally — a8a0ddb (CI fix: ffc851e)
+- [x] 2.2 `grep -c "print-check" .github/workflows/ci.yml` returns ≥ 1 — a8a0ddb (CI fix: ffc851e)
 
 #### Manual
 
@@ -346,8 +346,8 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [ ] 3.1 `npx supabase start` + `npm test` passes locally
-- [ ] 3.2 `grep -c "supabase start" .github/workflows/ci.yml` returns ≥ 1
+- [x] 3.1 `npx supabase start` + `npm test` passes locally
+- [x] 3.2 `grep -c "supabase start" .github/workflows/ci.yml` returns ≥ 1
 
 #### Manual
 

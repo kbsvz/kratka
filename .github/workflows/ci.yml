@@ -40,3 +40,31 @@ jobs:
       # precondition without pulling in the Supabase-in-CI setup Phase 3 adds.
       - run: touch .dev.vars .env.test
       - run: npx vitest run "src/pages/patterns/[id]/print.test.ts"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # `supabase` is an npm devDependency (installed by npm ci above), so no
+      # separate setup-cli Action is needed. `supabase start` applies
+      # migrations + supabase/seed.sql automatically on a fresh runner.
+      - run: npx supabase start
+      # These are the Supabase CLI's fixed local-dev demo keys (same on every
+      # local install everywhere — confirmed via `supabase status`, JWT issuer
+      # "supabase-demo", no override in supabase/config.toml). Not a real
+      # secret: this stack only exists for the lifetime of this job.
+      - run: |
+          cat <<'EOF' > .dev.vars
+          SUPABASE_URL=http://127.0.0.1:54321
+          SUPABASE_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+          EOF
+          cat <<'EOF' > .env.test
+          SUPABASE_URL=http://127.0.0.1:54321
+          SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+          EOF
+      - run: npm test
