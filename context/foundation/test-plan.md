@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-09-12 (research backport: Risk #1 reload-path gap, Risk #3 roadmap citation)
+> Last updated: 2026-09-13 (Phase 2 complete; research backport: Risk #5/#6 premise correction)
 
 ## 1. Strategy
 
@@ -56,8 +56,8 @@ research's job, see §1 principle #3).
 | #2 | A second user's authenticated request against a pattern id they don't own is rejected, not just filtered from their list | "RLS covers it" — RLS is DB-layer; the API route's own ownership check is a separate, untested surface | Auth session shape, route handler's ownership-check logic, RLS interaction | integration (API test with two seeded users) | Testing only the owning user's happy path and calling it isolation coverage |
 | #3 | For a known grid input, computed thread length and time exactly match hand-calculated values from the fixed constants | Comparing output to itself after a refactor instead of to an independently hand-computed expected value | The two fixed rate constants and their rounding/formatting rules | unit (pure function) | Oracle problem: asserting against current output instead of a hand-computed expected value |
 | #4 | A 4th create attempt (or concurrent creates at the cap) is rejected server-side, with slot/name state left consistent | "It's disabled in the UI" is mistaken for "the server rejects it" | Partial unique index behavior, name-pool exclusion logic | integration (API + DB) | Testing only the UI-disabled state, never hitting the API directly |
-| #5 | A request with out-of-range dimensions or an oversized palette is rejected with a clear error, not silently clamped or stored | Client-side validation existing is mistaken for server-side validation | zod schema bounds on the API route | unit/integration (API validation) | Trusting client-side bounds as sufficient evidence |
-| #6 | A soft-deleted pattern's id returns not-found from list, open, and print routes alike | Deleting removes it from the list, and that is assumed to cover every other route | Where `deleted_at` filtering is (and isn't) applied per route | integration (API, per route) | Testing only the list endpoint and assuming other routes inherit the filter |
+| #5 | A request with out-of-range dimensions or an oversized palette is rejected with a clear error, not silently clamped or stored | Zod validation and a DB CHECK-constraint backstop already exist server-side; the untested surface is the HTTP-layer response, not a missing guard | zod schema bounds on the API route, backed by DB CHECK constraints | integration (API validation) | Trusting client-side bounds as sufficient evidence |
+| #6 | A soft-deleted pattern's id returns not-found from list, open, and print routes alike | A single unconditional RLS `SELECT` policy already gates every read path; the untested surface is the real HTTP/page routes, not a missing per-route filter | The one RLS policy every read path shares, and the routes that depend on it | integration (API, per route) | Testing only the list endpoint and assuming other routes inherit the filter |
 | #7 | Printing a pattern produces a page with only grid+legend visible under the print media query — no nav, toolbar, or buttons | A visual "looks fine" pass without checking the print media query itself | Print CSS scoping, `@media print` rules | deterministic (DOM/CSS assertion); selective AI-native visual check as a secondary layer only | Full multimodal review on every UI tweak (explicitly out of scope per interview Q3/Q5) |
 
 ## 3. Phased Rollout
@@ -69,7 +69,7 @@ orchestrator updates Status as artifacts appear on disk.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Bootstrap runner + critical-path coverage | Prove the save/reload round-trip and the estimator math are correct | #1, #3 | unit + integration | complete | `context/changes/testing-critical-path-coverage/` |
-| 2 | Authorization & business-rule guardrails | Prove ownership checks, the 3-pattern cap, input bounds, and soft-delete invisibility hold at the API layer | #2, #4, #5, #6 | integration | change opened | `context/changes/testing-authorization-guardrails/` |
+| 2 | Authorization & business-rule guardrails | Prove ownership checks, the 3-pattern cap, input bounds, and soft-delete invisibility hold at the API layer | #2, #4, #5, #6 | integration | complete | `context/changes/testing-authorization-guardrails/` |
 | 3 | Print correctness + quality-gates wiring | Lock in chrome-free print output; wire required gates into CI | #7 | deterministic DOM/CSS check + selective AI-native visual spot-check | not started | — |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
@@ -132,13 +132,16 @@ the relevant rollout phase ships; before that, the sub-section reads
 - **Run command**: `npx supabase start` (once, local stack must be running), then `npm test`. Requires `.env.test` (gitignored) with `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from `npx supabase status`.
 
 ### 6.3 Adding an API authorization/business-rule test
-- TBD — see §3 Phase 2 (ownership, cap, validation, soft-delete — Risks #2, #4, #5, #6).
+- **Location**: `test/integration/`, same convention as §6.2 (`patterns-<risk-name>.test.ts`).
+- **Naming**: `patterns-authorization.test.ts`, `patterns-soft-delete.test.ts`, `patterns-concurrent-create.test.ts`, `patterns-input-bounds.test.ts` — one file per risk, named for the failure scenario, not the route.
+- **Reference test**: `test/integration/patterns-authorization.test.ts` — calls the real exported route handlers directly (mirroring §6.2's pattern) but seeds **two** real users via `createTestUser()` instead of one, so a genuine cross-owner request can be issued: user A creates a pattern, user B's session (via `buildAuthenticatedContext`/`signInTestUser`) attempts to read/modify it, and the assertion is on user B's real RLS-backed rejection, not a mocked check. This two-user variant is the only difference from the single-user pattern §6.2 documents — everything else (fixtures, real cookie-jar sign-in, no DB mocking) carries over unchanged.
+- **Run command**: same as §6.2 — `npx supabase start` (once), then `npm test`, or `npx vitest run test/integration/patterns-<name>.test.ts` for a single file. `vitest.config.ts` sets `fileParallelism: false` (added this phase) because every integration file shares one local Postgres and some races are timing-sensitive by construction.
 
 ### 6.4 Adding a print/visual check
 - TBD — see §3 Phase 3 (chrome-free print output, Risk #7).
 
 ### 6.5 Per-rollout-phase notes
-(Filled in after each phase lands.)
+- **Phase 2** (`testing-authorization-guardrails`): extracted the Supabase queries inlined in `.astro` frontmatter into `src/lib/patternQueries.ts` (`getPatternForOwner`, `getPatternListForOwner`), since rendering `.astro` pages directly (Astro's Container API) turned out to be infeasible in this project — the `@astrojs/cloudflare` adapter's config hooks need a real Worker context, which `vitest.config.ts` already can't provide (see its own inline note). Also added the retry-once-on-`23505` handling `src/pages/api/patterns/index.ts` was missing (Risk #4) — the original schema design assumed it, but it was never implemented.
 
 ## 7. What We Deliberately Don't Test
 
@@ -147,6 +150,7 @@ Exclusions agreed during the rollout (Phase 2 interview, Q5).
 - **Exhaustive automated UI-path coverage** — the team explicitly does not want every UI path automated; where UI behavior needs a test, it should run against prepared/seeded test data rather than exploring permutations. Re-evaluate if the app grows enough user-facing complexity that manual smoke testing stops being reliable. (Source: Phase 2 interview Q5.)
 - **UI layout / visual snapshot tests** — layout is iterated frequently for usability and design; snapshot tests here would break constantly and catch nothing. Re-evaluate once the visual design stabilizes. (Source: Phase 2 interview Q3.)
 - **Auth page rendering (Supabase-backed logic itself)** — Supabase owns the actual auth mechanics; only the app's own ownership/authorization logic on top of it is in scope (see Risk #2). (Source: PRD Access Control section — auth mechanism is a third-party boundary, not app logic.)
+- **A 3+-way concurrent create race exhausting a caller while a slot is still free** — Phase 2's retry-once fix (Risk #4) only guards a two-way race; a third concurrent request can still see the cap-reached message even though a slot opened up mid-race. Not tested and not defended against — accepted as a rare edge case, not a correctness bug the cap logic promises to prevent. (Source: `context/changes/testing-authorization-guardrails/plan.md` Phase 4.)
 
 ## 8. Freshness Ledger
 

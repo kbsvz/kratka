@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { POST } from "@/pages/api/patterns/index.ts";
 import { PATCH } from "@/pages/api/patterns/[id].ts";
-import { buildAuthenticatedContext, signInTestUser } from "./helpers/api-context";
+import { getPatternForOwner, getPatternListForOwner } from "@/lib/patternQueries";
+import { buildAuthenticatedContext, signInTestUser, PATTERNS_API_BASE_URL as BASE_URL } from "./helpers/api-context";
 import { cleanupTestUser, countPatternsForUser, createTestUser, type TestUser } from "./helpers/test-user";
-
-const BASE_URL = "http://localhost/api/patterns";
 
 let user: TestUser;
 
@@ -66,19 +65,18 @@ describe("pattern save/reload round-trip", () => {
     const saveResponse = await savePattern(id, palette, grid);
     expect(saveResponse.status).toBe(204);
 
-    // Same query src/pages/patterns/[id].astro:20-26 uses on reload.
     const { client } = await signInTestUser(user);
-    const { data, error } = await client
-      .from("patterns")
-      .select("id, name, width, height, palette, grid")
-      .eq("id", id)
-      .single();
+    const data = await getPatternForOwner(client, id);
 
-    expect(error).toBeNull();
+    expect(data).not.toBeNull();
     expect(data?.palette).toEqual(palette);
     expect(data?.grid).toEqual(grid);
     expect(data?.width).toBe(width);
     expect(data?.height).toBe(height);
+
+    const list = await getPatternListForOwner(client);
+    const listed = list.find((p) => p.id === id);
+    expect(listed).toMatchObject({ id, name: data?.name, width, height });
   });
 
   it("keeps dimensions unchanged after a save, since save only sends palette/grid", async () => {

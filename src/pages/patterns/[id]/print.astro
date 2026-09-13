@@ -1,8 +1,9 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
+import { getPatternForOwner } from "@/lib/patternQueries";
 import { estimatePattern, formatDuration } from "@/lib/patternEstimator";
-import type { PatternEditorData, PatternGrid, PatternPalette } from "@/types";
+import type { PatternEditorData } from "@/types";
 
 const { id } = Astro.params;
 
@@ -13,22 +14,9 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const isWellFormedId = !!id && UUID_RE.test(id);
 
 const supabase = isWellFormedId ? createClient(Astro.request.headers, Astro.cookies) : null;
-const { data } = supabase
-  ? await supabase
-      .from("patterns")
-      .select("id, name, width, height, palette, grid")
-      .eq("id", id ?? "")
-      .single()
-  : { data: null };
 
 // RLS hides patterns the caller doesn't own, so "not found" and "not owned" both land here.
-const pattern: PatternEditorData | null = data
-  ? {
-      ...data,
-      palette: data.palette as unknown as PatternPalette,
-      grid: data.grid as unknown as PatternGrid,
-    }
-  : null;
+const pattern: PatternEditorData | null = supabase ? await getPatternForOwner(supabase, id ?? "") : null;
 
 if (!pattern) {
   if (isWellFormedId) {
