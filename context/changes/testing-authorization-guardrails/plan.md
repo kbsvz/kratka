@@ -381,9 +381,9 @@ No schema changes. Phase 4's retry logic is application code only.
 
 #### Automated
 
-- [x] 6.1 `grep -c "TBD — see §3 Phase 2" context/foundation/test-plan.md` returns `0`
+- [x] 6.1 `grep -c "TBD — see §3 Phase 2" context/foundation/test-plan.md` returns `0` — a4f28dc
 
 #### Manual
 
-- [x] 6.2 §3 Phase 2 row reads `complete` with a change-folder link
-- [x] 6.3 §6.3 reads as a usable recipe, not a placeholder
+- [x] 6.2 §3 Phase 2 row reads `complete` with a change-folder link — a4f28dc
+- [x] 6.3 §6.3 reads as a usable recipe, not a placeholder — a4f28dc
