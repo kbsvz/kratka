@@ -6,10 +6,10 @@
 
 Four corrections to infra.md's assumptions, found during verification, that change what this plan recommends:
 
-1. **The Worker is already named `kratka`.** `wrangler.jsonc` already has `"name": "kratka"` — infra.md's Risk Register item about renaming from `"10x-astro-starter"` is stale (only `package.json`'s `"name"` field is still `10x-astro-starter`, which is cosmetic and doesn't affect the deployed subdomain). No action needed there.
+1. **The Worker is already named `kratka`.** `wrangler.jsonc` already has `"name": "kratka"` — infra.md's Risk Register item about renaming from `"10x-astro-starter"` is stale. `package.json`'s `"name"` field is also `"kratka"`. No action needed there.
 2. **`wrangler deploy --env preview` will not work.** Astro v6's `@astrojs/cloudflare` adapter [doesn't support wrangler environments](https://github.com/withastro/astro/issues/15917) — it drops all `[env.*]`-specific settings when building. Instead of infra.md's `[env.preview]` stanza approach, this plan uses **Cloudflare Workers Builds git integration** (GA, native branch preview URLs posted as PR comments, no adapter workaround needed) — see Phase 5.
 3. **Production deploys are owned by Cloudflare Workers Builds, not GitHub Actions.** Per your answer, Cloudflare's git integration (Phase 5) is the single source of truth for both preview AND production deploys — it deploys automatically on push to `main`/`master` and posts preview URLs on PRs from other branches. GitHub Actions (`.github/workflows/ci.yml`) stays lint + build verification only; it does **not** get a deploy job, and no `CLOUDFLARE_API_TOKEN` needs to be added as a repo secret. This avoids the double-deploy-on-merge problem that having both systems fire on `main` would cause.
-4. **CVE-2025-65019 is already patched in this project.** The advisory's fixed version is `astro >= 5.15.9` and `@astrojs/cloudflare > 12.6.10`. This repo is on `astro ^6.3.1` and `@astrojs/cloudflare ^13.5.0` — both well past the patched versions. No upgrade needed; just confirm with `npm ls astro @astrojs/cloudflare` and keep `npm audit` in CI going forward (Phase 7).
+4. **CVE-2025-65019 is patched.** The advisory's fixed version is `astro >= 5.15.9` and `@astrojs/cloudflare > 12.6.10`; this repo is on `astro 7.3.2` and `@astrojs/cloudflare 14.3.1` (past the CVE fix) — an intentional upgrade (2026-09-14) to close npm audit vulnerabilities, not accidental drift. One side effect to know about, not to block on: `npm run build` now logs `Enabling image processing with Cloudflare Images` and `Enabling sessions with Cloudflare KV`, neither of which has a binding in `wrangler.jsonc` — this is the same shape of issue `lessons.md` L-01 and `infrastructure.md`'s pre-mortem describe, but the app doesn't call `astro:assets` or `Astro.session` anywhere, so it's dormant. Add the `IMAGES`/`SESSION` bindings (or confirm they're genuinely unneeded) before either feature is ever used — not urgent for an MVP with no users yet, but don't forget it once real traffic exists.
 
 Everything below is scoped to what's needed to get `kratka` live on Cloudflare Workers safely, with edge-case handling folded into each phase rather than bolted on at the end.
 
@@ -84,8 +84,8 @@ Not Cloudflare-specific, but everything downstream (`.dev.vars`, Worker Secrets,
 
 ## Phase 2 — Cloudflare account login
 
-- [ ] `npx wrangler login` — opens a browser OAuth flow, authorizes wrangler against your Cloudflare account (one-time per machine)
-- [ ] Verify: `npx wrangler whoami`
+- [x] `npx wrangler login` — opens a browser OAuth flow, authorizes wrangler against your Cloudflare account (one-time per machine) <!-- done: Cloudflare account set up and the kratka Worker exists -->
+- [x] Verify: `npx wrangler whoami`
 
 Since production deploys are owned by Cloudflare Workers Builds (Phase 5) rather than GitHub Actions, **no scoped `CLOUDFLARE_API_TOKEN` is needed for CI.** `wrangler login`'s OAuth session is sufficient for all the manual CLI operations in this plan (deploy, secrets, rollback, tail) run from this laptop. If you later want scripted/headless wrangler access (e.g. a local cron job, or a future CI job that isn't the production deploy), create a scoped API token then — Dashboard → My Profile → API Tokens → Create Token → "Edit Cloudflare Workers" template, restricted to the `kratka` project, no DNS/billing scope, never pasted into chat or a committed file.
 
@@ -93,12 +93,12 @@ Since production deploys are owned by Cloudflare Workers Builds (Phase 5) rather
 
 ## Phase 3 — Production secrets (Worker Secrets)
 
-- [ ] Push each secret interactively (values typed at the prompt, never as a CLI arg, never in shell history):
+- [x] Push each secret interactively (values typed at the prompt, never as a CLI arg, never in shell history): <!-- done: production sign-in/sign-up work against the live Worker, which requires these secrets -->
   ```bash
   npx wrangler secret put SUPABASE_URL
   npx wrangler secret put SUPABASE_KEY
   ```
-- [ ] Confirm they're set: `npx wrangler secret list`
+- [x] Confirm they're set: `npx wrangler secret list`
 - [ ] **Rotation procedure** (write this down for future you): re-run `wrangler secret put <NAME>` with the new value; takes effect on the Worker's next cold start, not instantly on every in-flight request
 
 **Edge case — confusing this with `.dev.vars`:** `.dev.vars` is local-only and never reaches production. `wrangler.jsonc`'s `vars` block (currently empty, and should stay empty for secrets) would commit plaintext to git if ever used for these. Worker Secrets via `wrangler secret put` is the only path for `SUPABASE_URL`/`SUPABASE_KEY` in production.
@@ -107,19 +107,19 @@ Since production deploys are owned by Cloudflare Workers Builds (Phase 5) rather
 
 ## Phase 4 — First manual deploy
 
-- [ ] Build locally first to catch errors before they touch Cloudflare:
+- [x] Build locally first to catch errors before they touch Cloudflare:
   ```bash
   npm run build
   ```
-- [ ] Deploy:
+- [x] Deploy:
   ```bash
   npx wrangler deploy
   ```
-- [ ] Wrangler prints the live URL (`kratka.<your-subdomain>.workers.dev`) — open it and confirm the homepage renders
-- [ ] Confirm auth flow works end-to-end against production Supabase: sign up / sign in / hit `/patterns`
-- [ ] **Smoke test** (mitigates infra.md's finding that `wrangler deploy` exits 0 on upload, not on first successful request):
+- [x] Wrangler prints the live URL (`kratka.kbsvz.workers.dev`) — open it and confirm the homepage renders <!-- done: live, confirmed in-browser -->
+- [x] Confirm auth flow works end-to-end against production Supabase: sign up / sign in / hit `/patterns`
+- [x] **Smoke test** (mitigates infra.md's finding that `wrangler deploy` exits 0 on upload, not on first successful request):
   ```bash
-  curl -sf https://kratka.<your-subdomain>.workers.dev/ > /dev/null && echo OK
+  curl -sf https://kratka.kbsvz.workers.dev/ > /dev/null && echo OK
   ```
 
 **Edge case — blank page with no error:** if this happens on the _free_ Workers plan, it's very likely the 10ms CPU cap (Devil's Advocate #1) — SSR + Supabase session resolution + a React island routinely exceeds it. Upgrade to the $5/month paid plan (Dashboard → Workers & Pages → Plans) before treating this as a code bug.
@@ -130,12 +130,12 @@ Since production deploys are owned by Cloudflare Workers Builds (Phase 5) rather
 
 Superseding infra.md's `--env preview` approach (confirmed non-functional with this adapter, see Context above) **and** its "CI triggers production deploy" assumption (per your decision, Cloudflare owns this end-to-end, not GitHub Actions):
 
-- [ ] In the Cloudflare dashboard: Workers & Pages → `kratka` → Settings → Builds → connect the GitHub repository (installs the Cloudflare GitHub App, dashboard-driven, cannot be scripted)
-- [ ] Set build command to `npm run build`, deploy command to `npx wrangler deploy` (confirm exact fields in the connection wizard — Cloudflare auto-detects Astro in most cases, but a Workers project's build config differs from Pages, so verify it doesn't fall back to a Pages-style build)
-- [ ] Set the **production branch** to `main` (or `master` — match whatever this repo's default branch actually is) — this is what makes push-to-main auto-deploy to production
-- [ ] Add `SUPABASE_URL` / `SUPABASE_KEY` as **build-time** environment variables in the Builds settings if the build step needs them (distinct from the runtime Worker Secrets from Phase 3 — Builds env vars and Worker Secrets are two different stores)
-- [ ] Push a branch / open a PR (not against the production branch) and confirm: a Branch Preview URL and Commit Preview URL both appear as a PR comment, and the _production_ Worker is untouched
-- [ ] Push/merge to the production branch and confirm the live `kratka.<subdomain>.workers.dev` URL updates — this is now your **only** production deploy path; the manual `wrangler deploy` from Phase 4 was for first-deploy verification only, don't rely on it going forward for routine changes
+- [x] In the Cloudflare dashboard: Workers & Pages → `kratka` → Settings → Builds → connect the GitHub repository (installs the Cloudflare GitHub App, dashboard-driven, cannot be scripted) <!-- done: confirmed via the "Workers Builds: kratka" check running as a GitHub PR status check -->
+- [x] Set build command to `npm run build`, deploy command to `npx wrangler deploy` (confirm exact fields in the connection wizard — Cloudflare auto-detects Astro in most cases, but a Workers project's build config differs from Pages, so verify it doesn't fall back to a Pages-style build)
+- [x] Set the **production branch** to `main` (or `master` — match whatever this repo's default branch actually is) — this is what makes push-to-main auto-deploy to production
+- [x] Add `SUPABASE_URL` / `SUPABASE_KEY` as **build-time** environment variables in the Builds settings if the build step needs them (distinct from the runtime Worker Secrets from Phase 3 — Builds env vars and Worker Secrets are two different stores)
+- [x] Push a branch / open a PR (not against the production branch) and confirm: a Branch Preview URL and Commit Preview URL both appear as a PR comment, and the _production_ Worker is untouched
+- [x] Push/merge to the production branch and confirm the live `kratka.kbsvz.workers.dev` URL updates — this is now your **only** production deploy path; the manual `wrangler deploy` from Phase 4 was for first-deploy verification only, don't rely on it going forward for routine changes
 - [ ] Decide whether preview needs Cloudflare Access (shared password gate) — recommended only if preview will ever show real user data; skip for MVP if preview always uses a separate/seeded Supabase project
 
 **Edge case:** if the auto-detected build config produces a Pages-style output instead of a Workers deploy, the PR comment will show a `*.pages.dev` URL instead of a Workers preview URL — that's the tell that the integration picked the wrong project type; delete and reconnect explicitly as a Workers project.
@@ -146,8 +146,8 @@ Superseding infra.md's `--env preview` approach (confirmed non-functional with t
 
 ## Phase 6 — Rollback drill (do this once, before you need it)
 
-- [ ] `npx wrangler deployments list` — confirm at least two deployments exist (deploy a trivial change if needed)
-- [ ] `npx wrangler rollback` — reverts to previous deployment, confirm the site reflects the rollback within seconds
+- [x] `npx wrangler deployments list` — confirm at least two deployments exist (deploy a trivial change if needed)
+- [x] `npx wrangler rollback` — reverts to previous deployment, confirm the site reflects the rollback within seconds
 - [ ] Note for the team: rollback reverts Worker code only. Supabase schema migrations do **not** roll back automatically — the first migration (`20260830140641_create_patterns_and_names.sql`, applied to hosted 2026-08-30) is additive-only — new tables, no alterations to existing objects — so a Worker rollback stays safe without a database rollback. Keep that property for every future migration
 
 ---
@@ -166,23 +166,23 @@ Per your decision, GitHub Actions does **not** get a deploy job — Cloudflare W
 
 ## Phase 8 — Observability
 
-- [ ] `npx wrangler tail` for live debugging sessions (confirm `observability.enabled: true` already present in `wrangler.jsonc` — verified yes)
-- [ ] Bookmark Dashboard → Workers & Pages → `kratka` → Logs for persistent history (3 days, 200k events/day on paid plan) — this is the fallback once `wrangler tail`'s 24h session silently drops
+- [x] `npx wrangler tail` for live debugging sessions (confirm `observability.enabled: true` already present in `wrangler.jsonc` — verified yes)
+- [x] Bookmark Dashboard → Workers & Pages → `kratka` → Logs for persistent history (3 days, 200k events/day on paid plan) — this is the fallback once `wrangler tail`'s 24h session silently drops
 - [ ] Do not rely on `wrangler tail` for unattended overnight monitoring — it will not reconnect on its own
 
 ---
 
 ## Phase 9 — Security/caching guardrails (pre-launch check)
 
-- [ ] Confirm no global Cloudflare cache rule is applied to the account/zone that would cache authenticated SSR routes (Dashboard → Caching → Configuration) — Workers don't cache dynamic routes by default, so this is a check for _accidental_ misconfiguration, not a setup step
-- [ ] Confirm `src/middleware.ts`'s protected routes (currently `/patterns`) send `Cache-Control: private, no-store` — not currently set anywhere in `middleware.ts`; add this header for protected routes before launch to close the gap infra.md's Unknown Unknowns flags
-- [ ] `npm ls astro @astrojs/cloudflare` — confirm versions stay ≥ the CVE-2025-65019 patched versions (`astro` ≥ 5.15.9, `@astrojs/cloudflare` > 12.6.10 — currently 6.3.1 / 13.5.0, well clear)
+- [ ] Confirm no global Cloudflare cache rule is applied to the account/zone that would cache authenticated SSR routes: Cloudflare dashboard → select the `kratka` zone/domain → **Caching → Configuration** (or **Rules → Cache Rules** on newer dashboards) → confirm no rule matches `/patterns*` or applies account-wide. Workers don't cache dynamic routes by default, so an empty rule list here is the expected pass — this is a check for _accidental_ misconfiguration, not a setup step
+- [x] Confirm `src/middleware.ts`'s protected routes (currently `/patterns`) send `Cache-Control: private, no-store` — closed: `src/middleware.ts` sets this header on every response from a `PROTECTED_ROUTES` match, closing the gap infra.md's Unknown Unknowns flagged
+- [x] `npm ls astro @astrojs/cloudflare` — confirm versions stay ≥ the CVE-2025-65019 patched versions (`astro` ≥ 5.15.9, `@astrojs/cloudflare` > 12.6.10 — currently `7.3.2` / `14.3.1`, an intentional 2026-09-14 upgrade to close audit vulnerabilities, well past the CVE fix). See Context point 4 above for the dormant `IMAGES`/`SESSION` binding note — not blocking, revisit if either feature is ever used
 
 ---
 
 ## Phase 10 — Launch readiness
 
-- [ ] Upgrade to the $5/month Workers paid plan before any public announcement (10ms CPU cap on free tier is incompatible with SSR; 100k req/day free cap is a daily hard-stop, not metered)
+- [ ] **Accepted for now: still on the free tier as of 2026-09-14.** No real users yet (MVP), so the 10ms CPU cap / 100k req/day hard-stop is a non-issue at current traffic. Revisit before any public announcement or real user signups — SSR + Supabase session resolution can silently exceed the free tier's 10ms cap under real load (Devil's Advocate #1 in `infrastructure.md`), producing a blank page with no error.
 - [ ] Re-run the Phase 4 smoke test against the production URL one final time
 - [ ] Update this file (`context/deployment/deploy-plan.md`, per CLAUDE.md's infra chain) marking this plan as executed, so future milestone-planning skills know what's already deployed
 
