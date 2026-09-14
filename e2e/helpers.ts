@@ -10,8 +10,19 @@ import { expect, type Page } from "@playwright/test";
  * visibility and confirming the input's `type` attribute actually changed
  * is a functional proof a real onClick handler is attached, i.e. hydration
  * is done -- not an arbitrary wait.
+ *
+ * The click itself races the same hydration gap it's proving: Playwright's
+ * actionability checks (visible/enabled/stable) pass on the SSR-rendered
+ * button before React attaches its handler, so a click that lands too early
+ * is silently swallowed. `toPass` retries the click+assert as one unit so a
+ * swallowed click gets clicked again, instead of leaking a "flaky" (fail
+ * then pass) result out to the whole test's retry.
  */
 export async function waitForSignInFormHydration(page: Page): Promise<void> {
-  await page.getByRole("button", { name: "Show password" }).click();
-  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "text");
+  const passwordInput = page.getByLabel("Password", { exact: true });
+  const showPasswordButton = page.getByRole("button", { name: "Show password" });
+  await expect(async () => {
+    await showPasswordButton.click();
+    await expect(passwordInput).toHaveAttribute("type", "text", { timeout: 500 });
+  }).toPass({ timeout: 10_000 });
 }
