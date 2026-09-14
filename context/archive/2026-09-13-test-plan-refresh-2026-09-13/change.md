@@ -1,10 +1,10 @@
 ---
 change_id: test-plan-refresh-2026-09-13
 title: Refresh test-plan.md — CI gate honesty + one critical-path e2e smoke test
-status: impl_reviewed
+status: archived
 created: 2026-09-13
-updated: 2026-09-13
-archived_at: null
+updated: 2026-09-14
+archived_at: 2026-09-14T15:43:08Z
 ---
 
 ## Notes
