@@ -89,7 +89,9 @@ seeds a ready-to-use test account — sign in at `/auth/signin` with `test@examp
 | `npm run lint`         | ESLint with type-checked rules                   |
 | `npm run lint:fix`     | Auto-fix lint issues                             |
 | `npm run format`       | Prettier                                         |
-| `npx astro check`      | Type-check                                       |
+| `npm run typecheck`    | Type-check (`astro check`)                       |
+| `npm test`             | Unit + integration tests (vitest)                |
+| `npm run test:e2e`     | Critical-path e2e smoke test (Playwright)        |
 | `npx supabase test db` | pgTAP database tests                             |
 
 ## Database

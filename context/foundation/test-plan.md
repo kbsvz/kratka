@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-09-13 (test-plan-refresh-2026-09-13: CI-gate honesty + e2e smoke-test exception)
+> Last updated: 2026-09-14 (Phase 3 complete: testing-print-quality-gates — §6.4/§6.5 cookbook filled in)
 
 ## 1. Strategy
 
@@ -70,7 +70,7 @@ orchestrator updates Status as artifacts appear on disk.
 |---|---|---|---|---|---|---|
 | 1 | Bootstrap runner + critical-path coverage | Prove the save/reload round-trip and the estimator math are correct | #1, #3 | unit + integration | complete | `context/changes/testing-critical-path-coverage/` |
 | 2 | Authorization & business-rule guardrails | Prove ownership checks, the 3-pattern cap, input bounds, and soft-delete invisibility hold at the API layer | #2, #4, #5, #6 | integration | complete | `context/changes/testing-authorization-guardrails/` |
-| 3 | Print correctness + quality-gates wiring | Lock in chrome-free print output; add one critical-path e2e smoke test; wire required gates (incl. typecheck) into CI | #7 | deterministic DOM/CSS check + selective AI-native visual spot-check + one Playwright critical-path e2e smoke test | change opened | `context/changes/testing-print-quality-gates/` |
+| 3 | Print correctness + quality-gates wiring | Lock in chrome-free print output; add one critical-path e2e smoke test; wire required gates (incl. typecheck) into CI | #7 | deterministic DOM/CSS check + selective AI-native visual spot-check + one Playwright critical-path e2e smoke test | complete | `context/changes/testing-print-quality-gates/` |
 
 **Status vocabulary** (fixed — parser literals): `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`.
 
@@ -86,9 +86,9 @@ no docs or search MCP was available in the current session.
 | Layer | Tool | Version | Notes |
 |---|---|---|---|
 | database | pgTAP (`npx supabase test db`) | via `supabase` CLI ^2.23.4 | Only existing test layer today — covers RLS isolation (`supabase/tests/database/patterns_rls.test.sql`) |
-| unit + integration | none yet — see §3 Phase 1 | — | No vitest/jest/similar installed; Phase 1 bootstraps the runner |
-| API mocking | none yet — see §3 Phase 1 | — | Integration tests should hit a real local Supabase instance per existing pgTAP convention, not mock the DB |
-| e2e | Playwright — not yet installed, see §3 Phase 3 | — | checked: 2026-09-13 — one minimal critical-path smoke test (sign-in → open pattern → print), a narrow exception to the no-broad-e2e stance (§7); not for general UI-path coverage |
+| unit + integration | vitest | ^5.0.0 | Bootstrapped in §3 Phase 1; wired into CI in Phase 3 (`test` job, Supabase-in-CI) |
+| API mocking | none — hits a real local Supabase instance | — | Integration tests should hit a real local Supabase instance per existing pgTAP convention, not mock the DB |
+| e2e | Playwright (`@playwright/test`) | ^1.63.0 — checked: 2026-09-14 | One minimal critical-path smoke test (sign-in → open pattern → print), a narrow exception to the no-broad-e2e stance (§7); not for general UI-path coverage. Wired into CI in Phase 3 (`e2e` job) |
 | accessibility | none — not planned | — | Not raised as a risk in discovery or interview; out of scope for this rollout |
 | (optional) AI-native | Claude Browser MCP — checked: 2026-09-10 | n/a | Selective visual spot-check of the print view only (Risk #7); do NOT use for routine UI-layout iteration (interview Q3/Q5) |
 
@@ -106,13 +106,13 @@ phase lands; before that, the gate is `planned`.
 
 | Gate | Where | Required? | Catches |
 |---|---|---|---|
-| lint + typecheck | lint: local + CI (wired); typecheck: not yet wired — see §3 Phase 3 | required | syntactic / type drift |
+| lint + typecheck | local + CI (both wired: `lint-and-typecheck` job) | required | syntactic / type drift |
 | pgTAP (database) | local (`npx supabase test db`) | required after §3 Phase 2 | RLS/schema regressions |
-| unit + integration | local + CI | required after §3 Phase 3 | save/reload and estimator regressions |
+| unit + integration | local + CI (`test` job, Supabase-in-CI) | required | save/reload and estimator regressions |
 | API authorization tests | CI | required after §3 Phase 2 | ownership/IDOR, cap, validation, soft-delete regressions |
-| deterministic print-CSS check | CI on PR | required after §3 Phase 3 | app chrome leaking into print output |
+| deterministic print-CSS check | CI on PR (`print-check` job) | required | app chrome leaking into print output |
 | multimodal visual review | CI on PR | optional, selective (print view only) | visual issues the deterministic check misses |
-| critical-path e2e smoke test | CI on PR | required after §3 Phase 3 | regressions in the sign-in → open pattern → print flow that unit/integration/deterministic checks wouldn't catch |
+| critical-path e2e smoke test | CI on PR (`e2e` job) | required | regressions in the sign-in → open pattern → print flow that unit/integration/deterministic checks wouldn't catch |
 
 ## 6. Cookbook Patterns
 
@@ -139,10 +139,22 @@ the relevant rollout phase ships; before that, the sub-section reads
 - **Run command**: same as §6.2 — `npx supabase start` (once), then `npm test`, or `npx vitest run test/integration/patterns-<name>.test.ts` for a single file. `vitest.config.ts` sets `fileParallelism: false` (added this phase) because every integration file shares one local Postgres and some races are timing-sensitive by construction.
 
 ### 6.4 Adding a print/visual check
-- TBD — see §3 Phase 3 (chrome-free print output, Risk #7).
+- **Location**: co-located with the route it checks, `<route-name>.test.ts` next to the `.astro` file (e.g. `src/pages/patterns/[id]/print.test.ts` alongside `print.astro`).
+- **Naming**: `<route-name>.test.ts`; one `describe` per structural concern (chrome exclusion, `@media print` rules).
+- **Reference test**: `src/pages/patterns/[id]/print.test.ts` — reads the route's source text via `node:fs` and asserts against known substrings/regions (no `AppHeader` import, `print:hidden` on the two known elements, the `@media print` block's expected rules). This is a **source/structural assertion, not a rendered-DOM one** — the Astro Container API is confirmed infeasible for this project (§6.6 below), so there is no way to render `.astro` output directly in vitest.
+- **Run command**: `npx vitest run "src/pages/patterns/[id]/print.test.ts"`. No Supabase, no `.dev.vars`/`.env.test` needed for the assertions themselves — CI's `print-check` job still writes empty versions of both files because vitest's global `setupFiles` (`test/setup/load-env.ts`) unconditionally loads them for every run, regardless of which file is under test.
+- **Selective AI-native visual spot-check**: stays a manual/local step (Claude Browser MCP, run by a developer before merging print-view changes) — not a CI gate (test-plan.md §4/§7; MCP tools aren't invocable from a GitHub Actions job).
 
-### 6.5 Per-rollout-phase notes
+### 6.5 Adding a critical-path e2e test (Playwright)
+- **Location**: `e2e/`, one spec per file (e.g. `e2e/critical-path.spec.ts`). `e2e/CLAUDE.md` carries the project's E2E rules — read it before writing or editing anything in this directory.
+- **Naming**: `<flow-name>.spec.ts`, named for the risk it protects (e.g. `critical-path.spec.ts` for the sign-in → open pattern → print smoke test), not for the page or component under test.
+- **Reference test**: `e2e/critical-path.spec.ts` — drives the real UI (sign in, open the fixture pattern `supabase/seed.sql` seeds, click Print) and asserts the print page renders with no app chrome. `e2e/seed.spec.ts` is the broader exemplar for locator/isolation/cleanup conventions; `e2e/auth.setup.ts` is the `storageState`-based auth pattern ordinary specs should use — the critical-path spec is the one deliberate exception, since driving the sign-in UI is itself part of the risk it protects.
+- **Known gotcha**: the sign-in form (and any `client:load` React island) hydrates asynchronously — call `waitForSignInFormHydration(page)` from `e2e/helpers.ts` right after navigating to `/auth/signin`, before touching any field, or fills can be silently overwritten once hydration attaches (see `e2e/CLAUDE.md`).
+- **Run command**: `npm run test:e2e` (all specs) or `npx playwright test e2e/critical-path.spec.ts` (single file). Requires local Supabase running (`npx supabase start`) and the dev server (`playwright.config.ts`'s `webServer` starts it automatically via `npm run dev` if not already running). `fullyParallel: false` / `workers: 1` — all specs share one local Supabase instance and one seeded test user.
+
+### 6.6 Per-rollout-phase notes
 - **Phase 2** (`testing-authorization-guardrails`): extracted the Supabase queries inlined in `.astro` frontmatter into `src/lib/patternQueries.ts` (`getPatternForOwner`, `getPatternListForOwner`), since rendering `.astro` pages directly (Astro's Container API) turned out to be infeasible in this project — the `@astrojs/cloudflare` adapter's config hooks need a real Worker context, which `vitest.config.ts` already can't provide (see its own inline note). Also added the retry-once-on-`23505` handling `src/pages/api/patterns/index.ts` was missing (Risk #4) — the original schema design assumed it, but it was never implemented.
+- **Phase 3** (`testing-print-quality-gates`): wired `typecheck` (`astro check`), the print-CSS structural check, Supabase-in-CI, and the Playwright critical-path smoke test into four parallel CI jobs (`lint-and-typecheck`, `print-check`, `test`, `e2e`). Seeded one fixture pattern in `supabase/seed.sql` for the e2e test to open. The Supabase-in-CI keys are the CLI's fixed local-dev demo values (confirmed via `npx supabase status`, JWT issuer `"supabase-demo"`) — hardcoded in `ci.yml` rather than provisioned as a secret, since they're identical on every local install and the stack only exists for the job's lifetime.
 
 ## 7. What We Deliberately Don't Test
 
@@ -156,7 +168,7 @@ Exclusions agreed during the rollout (Phase 2 interview, Q5).
 ## 8. Freshness Ledger
 
 - Strategy (§1–§5) last reviewed: 2026-09-13
-- Stack versions last verified: 2026-09-10
+- Stack versions last verified: 2026-09-14
 - AI-native tool references last verified: 2026-09-10
 
 Refresh (`/10x-test-plan --refresh`) when:
