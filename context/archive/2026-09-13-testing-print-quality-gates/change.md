@@ -1,10 +1,10 @@
 ---
 change_id: testing-print-quality-gates
 title: Print correctness + quality-gates wiring
-status: impl_reviewed
+status: archived
 created: 2026-09-13
 updated: 2026-09-14
-archived_at: null
+archived_at: 2026-09-14T15:39:29Z
 ---
 
 ## Notes
