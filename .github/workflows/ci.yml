@@ -53,7 +53,12 @@ jobs:
       # `supabase` is an npm devDependency (installed by npm ci above), so no
       # separate setup-cli Action is needed. `supabase start` applies
       # migrations + supabase/seed.sql automatically on a fresh runner.
-      - run: npx supabase start
+      # Retried: GH Actions runners occasionally hit a transient Docker
+      # networking race on first boot ("address already in use" binding a
+      # container port that nothing else is actually holding); `supabase
+      # stop` clears the half-started containers so the retry gets a clean
+      # slate instead of layering onto the failed attempt.
+      - run: npx supabase start || (npx supabase stop && npx supabase start)
       # These are the Supabase CLI's fixed local-dev demo keys (same on every
       # local install everywhere — confirmed via `supabase status`, JWT issuer
       # "supabase-demo", no override in supabase/config.toml). Not a real
@@ -82,7 +87,9 @@ jobs:
       # Same Supabase-in-CI + local-dev-key pattern as the `test` job above --
       # the critical-path spec signs in as the seeded test user and opens the
       # fixture pattern seed.sql creates for it.
-      - run: npx supabase start
+      # Retried: see the `test` job's comment on the same line -- transient
+      # Docker networking race on runner boot, not an app issue.
+      - run: npx supabase start || (npx supabase stop && npx supabase start)
       - run: |
           cat <<'EOF' > .dev.vars
           SUPABASE_URL=http://127.0.0.1:54321
