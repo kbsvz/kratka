@@ -8,7 +8,13 @@ import { defineConfig, devices } from "@playwright/test";
 // wrangler-secret complexity a single smoke test doesn't need.
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: true,
+  // All specs share one local Supabase instance and one seeded test user
+  // (test/setup/load-env.ts's SUPABASE_SERVICE_ROLE_KEY is out of scope here --
+  // this is the browser-driven auth path). Running spec files in parallel
+  // would race on that single account, the same reason vitest.config.ts sets
+  // fileParallelism: false for the integration suite.
+  fullyParallel: false,
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: "html",
@@ -18,8 +24,13 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "setup",
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
+      dependencies: ["setup"],
     },
   ],
   webServer: {

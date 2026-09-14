@@ -368,13 +368,13 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [ ] 5.1 `npx playwright test` passes locally against a running local Supabase stack
-- [ ] 5.2 `grep -c "test:e2e\|playwright" .github/workflows/ci.yml` returns ≥ 1
+- [x] 5.1 `npx playwright test` passes locally against a running local Supabase stack
+- [x] 5.2 `grep -c "test:e2e\|playwright" .github/workflows/ci.yml` returns ≥ 1
 
 #### Manual
 
 - [ ] 5.3 `e2e` job appears in GitHub Actions and passes
-- [ ] 5.4 Breaking the editor's Print link locally makes the spec fail
+- [x] 5.4 Breaking the editor's Print link locally makes the spec fail (adapted: broke Risk #7 directly — rendered AppHeader in print.astro — rather than the Print link itself; confirmed the spec goes red on real chrome leaking into print output, then reverted)
 
 ### Phase 6: Docs sync
 
