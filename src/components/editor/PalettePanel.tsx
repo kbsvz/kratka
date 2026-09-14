@@ -88,7 +88,8 @@ export default function PalettePanel({
       <hr className="border-kratka-border mb-3 shrink-0" />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mb-2 flex items-baseline justify-end">
+        <div className="mb-2 flex items-baseline justify-between">
+          <h2 className="text-kratka-ink text-xs font-bold">Color palette</h2>
           <span className="text-kratka-muted text-[11px]">
             {palette.length}/{MAX_PALETTE_COLORS}
           </span>

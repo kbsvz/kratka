@@ -8,7 +8,7 @@ const error = Astro.url.searchParams.get("error");
 
 <Layout title="Sign in">
   <div class="bg-cosmic flex min-h-screen flex-col items-center p-4">
-    <Topbar />
+    <Topbar class="py-8" />
     <div class="w-full max-w-sm rounded-2xl border border-stone-200 bg-white/70 p-8 text-stone-800">
       <h1 class="mb-6 text-center text-2xl font-bold text-stone-800">Sign in</h1>
       <SignInForm serverError={error} client:load />

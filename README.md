@@ -1,35 +1,40 @@
-# kratka
+# KRATKA
 
 A friendly editor for designing patterns on a grid.
+
+Live at [kratka.kbsvz.workers.dev](https://kratka.kbsvz.workers.dev/).
 
 Cross-stitch charts, mosaics, carpets, beadwork, pixel art — anything built cell by cell.
 Pick your colours, paint the grid, print the result. No photo conversion, no professional
 CAD interface to learn: just a clean surface for drawing a pattern from scratch, which is
 otherwise a job people improvise with spreadsheets or graph paper.
 
-Free accounts keep up to three patterns. Every pattern prints as a clean chart — grid and
-colour legend only, no app furniture on the page.
+This version is free to use, with accounts capped at three patterns. Every pattern prints as a
+clean chart — grid and colour legend only, no app furniture on the page.
 
 **A little extra if you stitch.** Cross-stitch charts get a bonus on the printout: the legend
 also totals how much thread each colour needs, and how long the whole piece is likely to take.
 The editor and the chart are the same whatever you're making — this is just the first
 craft-specific flourish, and there's room for more.
 
-## Status
+## Technical details 
 
-Early. Auth, the data layer, and the core editor are in place; pattern list management and the printable chart view are not built yet.
+### Status
 
-| Area                                               | State       |
-| -------------------------------------------------- | ----------- |
-| Email/password auth, route protection              | working     |
-| `patterns` schema, RLS, 3-pattern cap, soft delete | working     |
-| Grid editor — draw, palette, save, reopen          | working (pending archive) |
-| Pattern list and delete                            | not started |
-| Printable chart view                               | not started |
+MVP complete. Auth, the data layer, the core editor, pattern list management, and the printable
+chart view are all in place.
+
+| Area                                               | State   |
+| -------------------------------------------------- | ------- |
+| Email/password auth, route protection              | working |
+| `patterns` schema, RLS, 3-pattern cap, soft delete | working |
+| Grid editor — draw, palette, save, reopen          | working |
+| Pattern list and delete                            | working |
+| Printable chart view                               | working |
 
 Product scope lives in `context/foundation/prd.md`; sequencing in `context/foundation/roadmap.md`.
 
-## Tech Stack
+### Tech Stack
 
 - [Astro](https://astro.build/) 6 — server-first rendering, `output: "server"`
 - [React](https://react.dev/) 19 — interactive islands only
@@ -38,13 +43,13 @@ Product scope lives in `context/foundation/prd.md`; sequencing in `context/found
 - [Supabase](https://supabase.com/) — Postgres, auth, row-level security
 - [Cloudflare Workers](https://workers.cloudflare.com/) — edge deployment
 
-## Prerequisites
+### Prerequisites
 
 - Node.js 22.14.0 (pinned in `.nvmrc` — `nvm use`)
 - [Docker](https://www.docker.com/) with ~7 GB RAM, for the local Supabase stack
 - A [Supabase](https://supabase.com/dashboard) project for deployed environments
 
-## Getting Started
+### Getting Started
 
 ```bash
 npm install
@@ -79,7 +84,7 @@ The app is at `http://localhost:4321`, Supabase Studio at `http://localhost:5432
 seeds a ready-to-use test account — sign in at `/auth/signin` with `test@example.com` /
 `password123`.
 
-## Scripts
+### Scripts
 
 | Command                | Purpose                                          |
 | ---------------------- | ------------------------------------------------ |
@@ -94,7 +99,7 @@ seeds a ready-to-use test account — sign in at `/auth/signin` with `test@examp
 | `npm run test:e2e`     | Critical-path e2e smoke test (Playwright)        |
 | `npx supabase test db` | pgTAP database tests                             |
 
-## Database
+### Database
 
 Schema lives in `supabase/migrations/`, named `YYYYMMDDHHmmss_short_description.sql`. Create one
 with `npx supabase migration new <name>`; apply locally with `npx supabase db reset`, which
@@ -121,7 +126,7 @@ unformatted, and formatting it would be undone on the next regeneration. Domain-
 deliberately narrower than the generated shapes, which describe columns but not the triggers and
 policies wrapped around them.
 
-## Project Structure
+### Project Structure
 
 ```md
 .
@@ -141,7 +146,7 @@ policies wrapped around them.
 └── wrangler.jsonc # Cloudflare Workers config
 ```
 
-## Auth
+### Auth
 
 Email/password via Supabase Auth, with cookie-based sessions handled by `@supabase/ssr`.
 
@@ -159,9 +164,9 @@ protected paths there.
 Users are stored in `auth.users`, a Supabase-managed table in the same database as the `public`
 schema. `patterns.user_id` references it with `on delete cascade`.
 
-## Deployment
+### Deployment
 
-Deployed to Cloudflare Workers.
+Deployed to Cloudflare Workers at [kratka.kbsvz.workers.dev](https://kratka.kbsvz.workers.dev/).
 
 ```bash
 npm run build
@@ -187,19 +192,19 @@ npx supabase db push
 Nothing automates this, so a deploy can outrun its schema. Push migrations before shipping code
 that depends on them. The full runbook is in `context/deployment/deploy-plan.md`.
 
-## CI
+### CI
 
 GitHub Actions runs four independent jobs on every push and PR to `main`:
 
-| Job                  | What it runs                                                              |
-| -------------------- | -------------------------------------------------------------------------- |
-| `lint-and-typecheck`  | `astro sync`, lint, `astro check`, `npm audit`, build                     |
-| `print-check`         | The deterministic print-CSS structural test (no Supabase needed)          |
-| `test`                | Unit + integration tests against a fresh local Supabase stack             |
-| `e2e`                 | The Playwright critical-path smoke test (sign-in → open pattern → print)  |
+| Job                  | What it runs                                                             |
+| -------------------- | ------------------------------------------------------------------------ |
+| `lint-and-typecheck` | `astro sync`, lint, `astro check`, `npm audit`, build                    |
+| `print-check`        | The deterministic print-CSS structural test (no Supabase needed)         |
+| `test`               | Unit + integration tests against a fresh local Supabase stack            |
+| `e2e`                | The Playwright critical-path smoke test (sign-in → open pattern → print) |
 
 `SUPABASE_URL` and `SUPABASE_KEY` must exist as repository secrets for `lint-and-typecheck`'s build step. `test` and `e2e` start their own local Supabase stack in-job and don't use those secrets.
 
-## License
+### License
 
 MIT
