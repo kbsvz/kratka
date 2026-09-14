@@ -17,7 +17,11 @@ test("signed-in user can open a pattern and reach a chrome-free print view", asy
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.waitForURL("**/patterns");
 
-  // Open the fixture pattern seeded for this test (supabase/seed.sql).
+  // Open the fixture pattern seeded for this test (supabase/seed.sql). The
+  // name is deterministic, not incidental: patterns_before_insert's
+  // pick_pattern_name always assigns "My Very First Pattern" to a fresh
+  // user's first pattern (seq=1) -- see the naming trigger in
+  // supabase/migrations/20260830140641_create_patterns_and_names.sql.
   await page.getByRole("link", { name: "My Very First Pattern", exact: true }).click();
   await page.waitForURL(/\/patterns\/[0-9a-f-]{36}$/);
 

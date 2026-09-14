@@ -368,8 +368,8 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [x] 5.1 `npx playwright test` passes locally against a running local Supabase stack — e8202a5
-- [x] 5.2 `grep -c "test:e2e\|playwright" .github/workflows/ci.yml` returns ≥ 1 — e8202a5
+- [x] 5.1 `npx playwright test` passes locally against a running local Supabase stack — e8202a5 (adapted: driven via `/10x-e2e` instead of writing the spec directly — its standard "two quality levers + auth setup" convention added `e2e/auth.setup.ts`, `e2e/seed.spec.ts`, `e2e/helpers.ts`, `e2e/CLAUDE.md`, and a `storageState`/`setup`-project split in `playwright.config.ts`, beyond this phase's original 2-file contract)
+- [x] 5.2 `grep -c "test:e2e\|playwright" .github/workflows/ci.yml` returns ≥ 1 — e8202a5 (adapted: `e2e/critical-path.spec.ts` locates the fixture pattern by its exact, deterministic name rather than the plan's generic href-based locator — see the file's own inline comment for why this is safe, not incidental)
 
 #### Manual
 
