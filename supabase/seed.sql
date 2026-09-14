@@ -43,3 +43,10 @@ insert into auth.identities (
   now()
 )
 on conflict (provider_id, provider) do nothing;
+
+-- Fixture pattern for the test user, so the Playwright critical-path smoke
+-- test (test-plan.md §3 Phase 3) has something to open and print. The
+-- patterns_before_insert trigger always derives slot/seq/name itself, so
+-- only user_id/width/height need to be supplied here.
+insert into public.patterns (user_id, width, height)
+values ('00000000-0000-0000-0000-000000000001', 20, 20);

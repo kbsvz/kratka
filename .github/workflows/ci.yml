@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  ci:
+  lint-and-typecheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,8 +18,80 @@ jobs:
       - run: npm ci
       - run: npx astro sync
       - run: npm run lint
+      - run: npm run typecheck
       - run: npm audit --audit-level=high
       - run: npm run build
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
+  print-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # print.test.ts needs neither Supabase nor real env values, but
+      # vitest's global setupFiles (test/setup/load-env.ts) unconditionally
+      # loads .dev.vars/.env.test for every run — empty files satisfy that
+      # precondition without pulling in the Supabase-in-CI setup Phase 3 adds.
+      - run: touch .dev.vars .env.test
+      - run: npx vitest run "src/pages/patterns/[id]/print.test.ts"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # `supabase` is an npm devDependency (installed by npm ci above), so no
+      # separate setup-cli Action is needed. `supabase start` applies
+      # migrations + supabase/seed.sql automatically on a fresh runner.
+      - run: npx supabase start
+      # These are the Supabase CLI's fixed local-dev demo keys (same on every
+      # local install everywhere — confirmed via `supabase status`, JWT issuer
+      # "supabase-demo", no override in supabase/config.toml). Not a real
+      # secret: this stack only exists for the lifetime of this job.
+      - run: |
+          cat <<'EOF' > .dev.vars
+          SUPABASE_URL=http://127.0.0.1:54321
+          SUPABASE_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+          EOF
+          cat <<'EOF' > .env.test
+          SUPABASE_URL=http://127.0.0.1:54321
+          SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+          EOF
+      - run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Same Supabase-in-CI + local-dev-key pattern as the `test` job above --
+      # the critical-path spec signs in as the seeded test user and opens the
+      # fixture pattern seed.sql creates for it.
+      - run: npx supabase start
+      - run: |
+          cat <<'EOF' > .dev.vars
+          SUPABASE_URL=http://127.0.0.1:54321
+          SUPABASE_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+          EOF
+          cat <<'EOF' > .env.test
+          SUPABASE_URL=http://127.0.0.1:54321
+          SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+          EOF
+      - run: npm run test:e2e
+        env:
+          CI: true

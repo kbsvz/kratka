@@ -89,7 +89,9 @@ seeds a ready-to-use test account — sign in at `/auth/signin` with `test@examp
 | `npm run lint`         | ESLint with type-checked rules                   |
 | `npm run lint:fix`     | Auto-fix lint issues                             |
 | `npm run format`       | Prettier                                         |
-| `npx astro check`      | Type-check                                       |
+| `npm run typecheck`    | Type-check (`astro check`)                       |
+| `npm test`             | Unit + integration tests (vitest)                |
+| `npm run test:e2e`     | Critical-path e2e smoke test (Playwright)        |
 | `npx supabase test db` | pgTAP database tests                             |
 
 ## Database
@@ -187,8 +189,16 @@ that depends on them. The full runbook is in `context/deployment/deploy-plan.md`
 
 ## CI
 
-GitHub Actions runs `astro sync`, lint, `npm audit`, and build on every push and PR to `main`.
-`SUPABASE_URL` and `SUPABASE_KEY` must exist as repository secrets for the build step.
+GitHub Actions runs four independent jobs on every push and PR to `main`:
+
+| Job                  | What it runs                                                              |
+| -------------------- | -------------------------------------------------------------------------- |
+| `lint-and-typecheck`  | `astro sync`, lint, `astro check`, `npm audit`, build                     |
+| `print-check`         | The deterministic print-CSS structural test (no Supabase needed)          |
+| `test`                | Unit + integration tests against a fresh local Supabase stack             |
+| `e2e`                 | The Playwright critical-path smoke test (sign-in → open pattern → print)  |
+
+`SUPABASE_URL` and `SUPABASE_KEY` must exist as repository secrets for `lint-and-typecheck`'s build step. `test` and `e2e` start their own local Supabase stack in-job and don't use those secrets.
 
 ## License
 
