@@ -87,6 +87,7 @@ export function usePatternGrid(pattern: PatternEditorData) {
       const addedIndex = palette.length + 1;
       setPalette((prev) => [...prev, hex.toLowerCase()]);
       setTool({ type: "paint", colorIndex: addedIndex });
+      setIsDirty(true);
       return true;
     },
     [palette],

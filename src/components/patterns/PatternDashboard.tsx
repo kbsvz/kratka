@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { usePatternList } from "@/components/hooks/usePatternList";
+import { useReloadOnBackForwardRestore } from "@/components/hooks/useReloadOnBackForwardRestore";
 import { formatRelativeTime, cn } from "@/lib/utils";
 import type { PatternListItem } from "@/types";
 
@@ -40,6 +41,7 @@ export default function PatternDashboard({
   const { patterns, pendingDeleteId, deleteError, sessionExpired, requestDelete, confirmDelete, cancelDelete } =
     usePatternList(initialPatterns);
   const atCap = patterns.length >= CAP;
+  useReloadOnBackForwardRestore();
 
   return (
     <div className="w-full text-left">

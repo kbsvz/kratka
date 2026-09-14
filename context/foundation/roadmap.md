@@ -3,13 +3,13 @@ project: "kratka"
 version: 1
 status: draft
 created: 2026-08-27
-updated: 2026-09-10
+updated: 2026-09-14
 prd_version: 2
 main_goal: speed
 top_blocker: capacity
 milestone_id: first-usable-pattern
 milestone_seq: 1
-milestone_status: open
+milestone_status: done
 ---
 
 # Roadmap: kratka
@@ -20,7 +20,7 @@ milestone_status: open
 
 ## Milestone
 
-**M-1: First Usable Pattern** — Status: open
+**M-1: First Usable Pattern** — Status: done
 
 - **Intent:** Prove that a cross-stitch designer can complete the full MVP workflow with kratka: draw a grid pattern, define a color palette, save it, manage their list of saved patterns, and produce a printable color chart showing per-color thread counts and a total time estimate.
 - **Source materials:** `context/foundation/prd.md` (v2)
@@ -159,7 +159,7 @@ From PRD `## Non-Goals` — all confirmed during shaping:
 
 ## Milestone History
 
-(Empty — this is the first milestone.)
+- **M-1: First Usable Pattern** (`first-usable-pattern`) — closed 2026-09-14. Full MVP workflow shipped: schema + RLS, draw/palette/save editor, pattern list + delete, and the printable color chart with thread-count and time estimates — all four scope items (F-01, S-01, S-02, S-03) archived.
 
 ## Done
 
