@@ -380,9 +380,9 @@ Bring `test-plan.md`'s cookbook and `README.md` in line with what now actually e
 
 #### Automated
 
-- [x] 6.1 §6.4/§6.6 no longer read `TBD` for print-check/e2e
-- [x] 6.2 Stale-claim sweep returns no unaddressed hits in living docs
+- [x] 6.1 §6.4/§6.6 no longer read `TBD` for print-check/e2e — 119711d
+- [x] 6.2 Stale-claim sweep returns no unaddressed hits in living docs — 119711d
 
 #### Manual
 
-- [x] 6.3 Updated §6 entries read coherently end-to-end
+- [x] 6.3 Updated §6 entries read coherently end-to-end — 119711d
